@@ -1,9 +1,9 @@
 ## Topology
-<img src="https://media.discordapp.net/attachments/527433841690804224/838425532751675403/2Q.png" width="720">
+<img src="https://media.discordapp.net/attachments/527433841690804224/838456513889959967/2Q.png?width=1314&height=666" width="720">
 
 ### Configuration
-H0 : 192.168.0.3  
-H1 : 192.168.1.3  
+H0 : [192.168.0.3, 192.168.0.4]  
+H1 : [192.168.1.3, 192.168.1.4]  
 R1 : [192.168.0.1, 192.168.100.1, 192.168.100.2]  
 R2 : [192.168.0.2, 192.168.100.5, 192.168.100.6]  
 R3 : [192.168.1.1, 192.168.100.3, 192.168.100.4]  
@@ -40,3 +40,6 @@ All with subnet /24
 - [ ] sets the buffer in the router from 20 - [ ]> 100
 - [ ] Caputre how the buffers affect delay time
 - [ ] Analize
+
+## Ref's
+http://csie.nqu.edu.tw/smallko/sdn/twNics.htm

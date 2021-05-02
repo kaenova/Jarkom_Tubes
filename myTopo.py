@@ -1,15 +1,7 @@
 #!/usr/bin/python
-from mininet.net import Mininet
-from mininet.link import TCLink
-from mininet.node import Node
-from mininet.topo import Topo
-from mininet.log import setLogLevel, info
-from mininet.util import pmonitor
-from signal import SIGINT
-import time
-import os
 
-# Creating all the router
+from mininet.net import Mininet
+from mininet.node import Node
 
 class Router1( Node ):
     def config( self, **params ):
@@ -60,49 +52,46 @@ class Router4( Node ):
         super( Router4, self ).terminate()
 
 
-# Creating host and Link
+# Jangan lupa selesaikan ini!        
+class PC1( Node ):
+    def config( self, **params ):
+        super( Router4, self).config( **params )
+        self.cmd( 'sysctl net.ipv4.ip_forward=1' )
+        self.cmd( 'ip addr add 192.168.1.2/24 brd + dev r0-eth0' )
+        self.cmd( 'ip addr add 192.168.100.7/24 brd + dev r0-eth1' )
+        self.cmd( 'ip addr add 192.168.100.8/24 brd + dev r0-eth2' )
 
-topos = { 'mytopo': ( lambda: NetworkTopo() ) }
-class NetworkTopo( Topo ):
-    "A LinuxRouter connecting three IP subnets"
-
-    def build( self, **_opts ):
-
-        # Add Router
-        router1 = self.addNode( 'r1', cls=Router1, ip='192.168.0.1/24' )
-        router2 = self.addNode( 'r2', cls=Router2, ip='192.168.0.2/24' )
-        router3 = self.addNode( 'r3', cls=Router3, ip='192.168.1.1/24' )
-        router4 = self.addNode( 'r4', cls=Router4, ip='192.168.1.2/24' )
+    def terminate( self ):
+        self.cmd( 'sysctl net.ipv4.ip_forward=0' )
+        super( Router4, self ).terminate()
         
-        # Add Host
-        h0 = self.addHost( 'h0', ip='192.168.0.3/24', defaultRoute='via 192.168.0.1' )
-        h0.cmd
-        h1 = self.addHost( 'h1', ip='192.168.1.3/24', defaultRoute='via 192.168.1.1' )
+class PC2( Node ):
+    def config( self, **params ):
+        super( Router4, self).config( **params )
+        self.cmd( 'sysctl net.ipv4.ip_forward=1' )
+        self.cmd( 'ip addr add 192.168.1.2/24 brd + dev r0-eth0' )
+        self.cmd( 'ip addr add 192.168.100.7/24 brd + dev r0-eth1' )
+        self.cmd( 'ip addr add 192.168.100.8/24 brd + dev r0-eth2' )
 
-        # Add Link from Host to Router
-        self.addLink( h0, router1, intfName1='r0-eth0', intfName2='r0-eth0', bw=1 ) 
-        self.addLink( h0, router2, intfName1='r0-eth1', intfName2='r0-eth0', bw=1 )
-        self.addLink( h1, router3, intfName1='r0-eth0', intfName2='r0-eth0', bw=1 )
-        self.addLink( h1, router4, intfName1='r0-eth1', intfName2='r0-eth0', bw=1 )
-        
-        # Add link from Router to Router
-        self.addLink( router1, router3, intfName1='r0-eth1', intfName2='r0-eth1' )
-        self.addLink( router1, router4, intfName1='r0-eth2', intfName2='r0-eth2' )
-        
-        self.addLink( router2, router3, intfName1='r0-eth2', intfName2='r0-eth2' )
-        self.addLink( router2, router4, intfName1='r0-eth1', intfName2='r0-eth1' )
+    def terminate( self ):
+        self.cmd( 'sysctl net.ipv4.ip_forward=0' )
+        super( Router4, self ).terminate()
 
-
-
-
-
-
-# def initializeTopo():
-#     print('Running Debug Mode')
-#     os.system( 'mn --topo=mytopo' )
-#     setLogLevel( 'info' )
+def myNet():
+    net = Mininet(build=False, ipBase='192.168.0.0/23')
     
-# if __name__ == '__main__':
-#     os.system( 'mn -c' )
-#     print('==========================================================================')
-#     setLogLevel( 'info' )
+    print("Creating Router")
+    # Checkpoint! 03-05-2021 00:14,
+    # Belum selesai Ngebuat Host berdasarkan kelas2nya
+    # Ikuti contoh dari ./module_example/gachiemhiep.py
+    # Setelah buat host router, buat host computer dengan kelas PC1 dan PC2
+    r1 = net.addHost('r1', cls=Router1, ip='192.168.0.1/24')
+    r1 = net.addHost('r1', cls=Router1, ip='192.168.0.2/24')
+    r1 = net.addHost('r1', cls=Router1, ip='192.168.0.1/24')
+    r1 = net.addHost('r1', cls=Router1, ip='192.168.0.1/24')
+    
+if __name__=='__init__':
+    # global net
+    info( 'Initializing Mininet' )
+    Mininet.init()
+    myNet()
