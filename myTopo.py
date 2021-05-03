@@ -59,7 +59,6 @@ class PC1( Node ):
         self.cmd( 'sysctl net.ipv4.ip_forward=1' )
         self.cmd( 'ip addr add 192.168.1.2/24 brd + dev r0-eth0' )
         self.cmd( 'ip addr add 192.168.100.7/24 brd + dev r0-eth1' )
-        self.cmd( 'ip addr add 192.168.100.8/24 brd + dev r0-eth2' )
 
     def terminate( self ):
         self.cmd( 'sysctl net.ipv4.ip_forward=0' )
@@ -71,7 +70,6 @@ class PC2( Node ):
         self.cmd( 'sysctl net.ipv4.ip_forward=1' )
         self.cmd( 'ip addr add 192.168.1.2/24 brd + dev r0-eth0' )
         self.cmd( 'ip addr add 192.168.100.7/24 brd + dev r0-eth1' )
-        self.cmd( 'ip addr add 192.168.100.8/24 brd + dev r0-eth2' )
 
     def terminate( self ):
         self.cmd( 'sysctl net.ipv4.ip_forward=0' )
