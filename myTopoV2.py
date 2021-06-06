@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 # TO DO
 # 1. Selesaikan konfigurasi ip address pada semua Node
 # 2. Selesaikan konfigurasi routing statis pada router
@@ -39,39 +41,71 @@ net.addLink(r2, r3, bw=1)
 net.addLink(r2, r4, bw=0.5)
 
 # Konfigurasi IP Address di C1
-c1.cmd("ifconfig c1-eth0 192.168.0.3/24")
+c1.cmd("ifconfig c1-eth0 192.168.0.2/24")
 c1.cmd("route add default gw 192.168.0.1 c1-eth0")
-c1.cmd("ifconfig c1-eth1 192.168.0.4/24")
-c1.cmd("route add default gw 192.168.0.2 c1-eth1")
+c1.cmd("ifconfig c1-eth1 192.168.1.2/24")
+c1.cmd("route add default gw 192.168.1.1 c1-eth1")
 
 # Konfigurasi IP Address di C2
-c2.cmd("ifconfig c2-eth0 192.168.1.3/24")
-
-c2.cmd("ifconfig c2-eth1 192.168.1.4/24")
+c2.cmd("ifconfig c2-eth0 192.168.2.2/24")
+c2.cmd("route add default gw 192.168.2.1 c2-eth0")
+c2.cmd("ifconfig c2-eth1 192.168.3.2/24")
+c2.cmd("route add default gw 192.168.3.1 c2-eth1")
 
 # Konfigurasi IP Address di R1
 r1.cmd("ifconfig r1-eth0 192.168.0.1/24")
-r1.cmd("ifconfig r1-eth1 192.168.100.1/24")
-r1.cmd("ifconfig r1-eth2 192.168.100.2/24")
+r1.cmd("ifconfig r1-eth1 192.168.100.1/30")
+r1.cmd("ifconfig r1-eth2 192.168.100.5/30")
 r1.cmd("sysctl net.ipv4.ip_forward=1")
+# Manual routing
+# ke 192.168.1.0
+r1.cmd("ip route add 192.168.1.0/24 via 192.168.100.6 dev r1-eth2 onlink")
+# ke 192.168.2.0
+r1.cmd("ip route add 192.168.2.0/24 via 192.168.100.6 dev r1-eth2 onlink")
+# ke 192.168.3.0
+r1.cmd("ip route add 192.168.3.0/24 via 192.168.100.2 dev r1-eth1 onlink")
+
 
 # Konfigurasi IP Address di R2
-r2.cmd("ifconfig r2-eth0 192.168.0.2/24")
-r2.cmd("ifconfig r2-eth1 192.168.100.6/24")
-r2.cmd("ifconfig r2-eth2 192.168.100.5/24")
+r2.cmd("ifconfig r2-eth0 192.168.1.1/24")
+r2.cmd("ifconfig r2-eth1 192.168.100.9/30")
+r2.cmd("ifconfig r2-eth2 192.168.100.13/30")
 r2.cmd("sysctl net.ipv4.ip_forward=1")
+# Manual routing
+# ke 192.168.0.0
+r2.cmd("ip route add 192.168.0.0/24 via 192.168.100.10 dev r2-eth1 onlink")
+# ke 192.168.2.0
+r2.cmd("ip route add 192.168.2.0/24 via 192.168.100.10 dev r2-eth1 onlink")
+# ke 192.168.3.0
+r2.cmd("ip route add 192.168.3.0/24 via 192.168.100.14 dev r2-eth2 onlink")
+
 
 # Konfigurasi IP Address di R3
-r3.cmd("ifconfig r3-eth0 192.168.1.1/24")
-r3.cmd("ifconfig r3-eth1 192.168.100.3/24")
-r3.cmd("ifconfig r3-eth2 192.168.100.4/24")
+r3.cmd("ifconfig r3-eth0 192.168.2.1/24")
+r3.cmd("ifconfig r3-eth1 192.168.100.2/30")
+r3.cmd("ifconfig r3-eth2 192.168.100.10/30")
 r3.cmd("sysctl net.ipv4.ip_forward=1")
+# Manual routing
+# ke 192.168.0.0
+r3.cmd("ip route add 192.168.0.0/24 via 192.168.100.1 dev r3-eth1 onlink")
+# ke 192.168.1.0
+r3.cmd("ip route add 192.168.1.0/24 via 192.168.100.9 dev r3-eth2 onlink")
+# ke 192.168.3.0
+r3.cmd("ip route add 192.168.3.0/24 via 192.168.100.9 dev r3-eth2 onlink")
+
 
 # Konfigurasi IP Address di R4
-r4.cmd("ifconfig r4-eth0 192.168.1.2/24")
-r4.cmd("ifconfig r4-eth1 192.168.100.8/24")
-r4.cmd("ifconfig r4-eth2 192.168.100.7/24")
+r4.cmd("ifconfig r4-eth0 192.168.3.1/24")
+r4.cmd("ifconfig r4-eth1 192.168.100.6/30")
+r4.cmd("ifconfig r4-eth2 192.168.100.14/30")
 r4.cmd("sysctl net.ipv4.ip_forward=1")
+## Manual routing
+# ke 192.168.0.0
+r4.cmd("ip route add 192.168.0.0/24 via 192.168.100.5 dev r4-eth1 onlink")
+# ke 192.168.1.0
+r4.cmd("ip route add 192.168.1.0/24 via 192.168.100.13 dev r4-eth2 onlink")
+# ke 192.168.2.0
+r4.cmd("ip route add 192.168.2.0/24 via 192.168.100.5 dev r4-eth1 onlink")
 
 
 CLI(net)

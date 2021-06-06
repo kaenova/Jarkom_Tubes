@@ -1,6 +1,6 @@
 ## Topology
 
-<img src="https://media.discordapp.net/attachments/527433841690804224/838456513889959967/2Q.png" width="720">
+<img src="https://media.discordapp.net/attachments/848755541848227850/851095078645923850/unknown.png" width="720">
 
 ### Configuration
 
