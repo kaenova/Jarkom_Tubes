@@ -1,0 +1,22 @@
+Yang sama dari CLO1-CLO4
+1. Generate Traffic dan Background traffic menggunakan iPerf
+
+Inti CLO1 //Static Routing
+1. Check Throughput 
+2. Packet Loss
+3. Delay
+
+Inti CLO2 //Dynamic Routing
+1. Pemutusan R1 ke R4
+2. Implementasi RIP dan OSPF
+3. Chech Convergence Time, Delay
+4. Analisis durasi Convergance dan Delay terhadap RIP dan OSPF
+
+Inti CLO3 //Static routing
+1. Capture traffic
+2. Analisis hasil capture traffic
+
+Inti CLO4 //Static routing
+1. Ukuran buffer pada router 20,40,60,100
+2. Analisis pengaruh ukuran buffer terhadap delay
+3. Analiss hasil variasi ukuran buffer
