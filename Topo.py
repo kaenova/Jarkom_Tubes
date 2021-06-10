@@ -22,7 +22,7 @@ class LinuxRouter(Node):
         super(LinuxRouter, self).terminate()
 
 #mendeklarasikan kelas MyTopo dengan parameter Topo
-class MyTopo1dan3(Topo):
+class MyTopo(Topo):
     #mendeklarasikan def/fungsi untuk membangun topologi
     def __init__(self, **opts):
         Topo.__init__( self, **opts)
@@ -46,6 +46,84 @@ class MyTopo1dan3(Topo):
         self.addLink(r1, r4, bw=1, **linkopt)
         self.addLink(r2, r3, bw=1, **linkopt)
         self.addLink(r2, r4, bw=0.5, **linkopt)
+        
+def runCLO1():
+    #get Current Time for Logging
+    current = datetime.datetime.now()
+    currDateStr = str(current.date())
+    currTimeStr = "{:%H:%M:%S}".format(current)
+    os.mkdir("{}/logs/{}_{}".format(CURRENT_PATH, currDateStr, currTimeStr))
+    logs_path = "{}/logs/{}_{}/".format(CURRENT_PATH,currDateStr, currTimeStr)
+    
+    info("***Clearing switch and nodes \n")
+    os.system('mn -c')
+    print("\n")
+    topo = MyTopo()
+    link = TCLink
+    host = CPULimitedHost
+    net = Mininet(topo=topo, link=link, controller = None ,host = Host) 
+    net.start()
+    c1, c2, r1, r2, r3 ,r4 = net.get('c1','c2', 'r1','r2','r3','r4')
+
+    c1.cmd("ifconfig c1-eth0 192.168.0.2/24")
+    c1.cmd("route add default gw 192.168.0.1 c1-eth0")
+    c1.cmd("ifconfig c1-eth1 192.168.1.2/24")
+    c1.cmd("route add default gw 192.168.1.1 c1-eth1")
+    
+    # Konfigurasi IP Address di C2
+    c2.cmd("ifconfig c2-eth0 192.168.2.2/24")
+    c2.cmd("route add default gw 192.168.2.1 c2-eth0")
+    c2.cmd("ifconfig c2-eth1 192.168.3.2/24")
+    c2.cmd("route add default gw 192.168.3.1 c2-eth1")
+
+    # Konfigurasi IP Address di R1
+    r1.cmd("ifconfig r1-eth0 192.168.0.1/24")
+    r1.cmd("ifconfig r1-eth1 192.168.100.1/30")
+    r1.cmd("ifconfig r1-eth2 192.168.100.5/30")
+    r1.cmd("sysctl net.ipv4.ip_forward=1")
+    
+    r2.cmd("ifconfig r2-eth0 192.168.1.1/24")
+    r2.cmd("ifconfig r2-eth1 192.168.100.9/30")
+    r2.cmd("ifconfig r2-eth2 192.168.100.13/30")
+    r2.cmd("sysctl net.ipv4.ip_forward=1")
+    
+    r3.cmd("ifconfig r3-eth0 192.168.2.1/24")
+    r3.cmd("ifconfig r3-eth1 192.168.100.2/30")
+    r3.cmd("ifconfig r3-eth2 192.168.100.10/30")
+    r3.cmd("sysctl net.ipv4.ip_forward=1")
+    
+    r4.cmd("ifconfig r4-eth0 192.168.3.1/24")
+    r4.cmd("ifconfig r4-eth1 192.168.100.6/30")
+    r4.cmd("ifconfig r4-eth2 192.168.100.14/30")
+    r4.cmd("sysctl net.ipv4.ip_forward=1")
+
+    # Pinging same networks
+    print("C1 - R1 (1)")
+    c1.cmdPrint("ping -c 3 192.168.0.1")
+    print("\n")
+    print("C1 - R2 (2)")
+    c1.cmdPrint("ping -c 3 192.168.1.1") 
+    print("\n")
+    print("C2 - R3 (3)")
+    c2.cmdPrint("ping -c 3 192.168.2.1")
+    print("\n")
+    print("C2 - R4 (4)")
+    c2.cmdPrint("ping -c 3 192.168.3.1") 
+    print("\n")
+    print("R1 - R3 (5)")
+    r1.cmdPrint("ping -c 3 192.168.100.2") 
+    print("\n")
+    print("R1 - R4 (6)")
+    r1.cmdPrint("ping -c 3 192.168.100.6") 
+    print("\n")
+    print("R2 - R3 (7)")
+    r2.cmdPrint("ping -c 3 192.168.100.10") 
+    print("\n")
+    print("R2 - R4 (8)")
+    r2.cmdPrint("ping -c 3 192.168.100.14") 
+    
+    CLI(net)
+    net.stop()
 
 def runCLO2():
     #get Current Time for Logging
@@ -57,7 +135,8 @@ def runCLO2():
     
     info("***Clearing switch and nodes \n")
     os.system('mn -c')
-    topo = MyTopo1dan3()
+    print("\n")
+    topo = MyTopo()
     link = TCLink
     host = CPULimitedHost
     net = Mininet(topo=topo, link=link, controller = None ,host = Host) 
@@ -144,6 +223,7 @@ if __name__ == '__main__':
         print("Kaenova Mahendra Auditama | 1301190324 | IF-43-02")
         print("Pilihan: ")
         print("1. CLO1")
+        print("To run CLO1 don't forget to logs in the command line")
         print("2. CLO2")
         print("3. CLO3")
         print("4. CLO4")
@@ -154,7 +234,7 @@ if __name__ == '__main__':
     print("================== Initializing ==================")
         
     if pilihan == "1":
-        pass
+        runCLO1()
     elif pilihan == "2":
         runCLO2()
     elif pilihan == "3":
@@ -163,9 +243,3 @@ if __name__ == '__main__':
         pass
     else:
         raise ValueError("Input {} tidak tersedia".format(pilihan))
-
-
-# # set ospf untuk c1
-# r1.cmdPrint("zebra -f {}/conf/zebra-{}.conf -d".format(currentpath, r1.name))
-# r1.cmdPrint("ripd -f {}/conf/ripd-{}.conf -d".format(currentpath,r1.name))
-# r1.waitOutput()
