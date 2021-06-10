@@ -209,7 +209,6 @@ def runCLO2():
     c1.cmd('echo "Kaenova Mahendra Auditama \n C1 - runCLO2-c1 at {}" > {}/runCLO2-c1-iperf.txt && nohup iperf -c 192.168.2.2 --interval 1 --time 30 >> {}/runCLO2-c1-iperf.txt &'.format(f"{currDateStr} {currTimeStr}",logs_path, logs_path))
     info('\n')
 
-    #net.pingAll()
     CLI(net)
     net.stop()
         
@@ -223,7 +222,7 @@ if __name__ == '__main__':
         print("Kaenova Mahendra Auditama | 1301190324 | IF-43-02")
         print("Pilihan: ")
         print("1. CLO1")
-        print("To run CLO1 don't forget to logs in the command line")
+        print("notes: To run CLO1 don't forget to logs in the command line")
         print("2. CLO2")
         print("3. CLO3")
         print("4. CLO4")
