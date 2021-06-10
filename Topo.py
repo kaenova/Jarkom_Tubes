@@ -6,11 +6,20 @@ from mininet.log import setLogLevel, info
 from mininet.cli import CLI
 from mininet.node import Host, Node
 #for ospfd and for ripd
+from os import system
 import os
 CURRENT_PATH = os.getcwd()
 
 import datetime
 
+class LinuxRouter(Node):
+    def config(self, **params):
+        super(LinuxRouter, self).config(**params)
+        self.cmd('sysctl net.ipv4.ip_forward=1')
+
+    def terminate(self):
+        self.cmd('sysctl net.ipv4.ip_forward=0')
+        super(LinuxRouter, self).terminate()
 
 #mendeklarasikan kelas MyTopo dengan parameter Topo
 class MyTopo1dan3(Topo):
@@ -19,10 +28,10 @@ class MyTopo1dan3(Topo):
         Topo.__init__( self, **opts)
         #Add host and switch
         linkopt = {'delay' : '5ms', 'loss' : 0}
-        r1 =self.addHost("r1", cls=Node)
-        r2 =self.addHost("r2", cls=Node)
-        r3 =self.addHost("r3", cls=Node)
-        r4 =self.addHost("r4", cls=Node)
+        r1 =self.addHost("r1", cls=LinuxRouter)
+        r2 =self.addHost("r2", cls=LinuxRouter)
+        r3 =self.addHost("r3", cls=LinuxRouter)
+        r4 =self.addHost("r4", cls=LinuxRouter)
 
         c1 = self.addHost("c1", cls=Node)
         c2 = self.addHost("c2", cls=Node)
@@ -37,32 +46,8 @@ class MyTopo1dan3(Topo):
         self.addLink(r1, r4, bw=1, **linkopt)
         self.addLink(r2, r3, bw=1, **linkopt)
         self.addLink(r2, r4, bw=0.5, **linkopt)
-  
-class MyTopo2(Topo):
-    #mendeklarasikan def/fungsi untuk membangun topologi
-    def __init__(self, **opts):
-        Topo.__init__( self, **opts)
-        #Add host and switch
-        linkopt = {'delay' : '5ms', 'loss' : 0}
-        r1 =self.addHost("r1", cls=Node)
-        r2 =self.addHost("r2", cls=Node)
-        r3 =self.addHost("r3", cls=Node)
-        r4 =self.addHost("r4", cls=Node)
 
-        c1 = self.addHost("c1", cls=Node)
-        c2 = self.addHost("c2", cls=Node)
-
-        self.addLink(c1, r1, bw=1, **linkopt)
-        self.addLink(c1, r2, bw=1, **linkopt)
-        ## C2 to Router
-        self.addLink(c2, r3, bw=1, **linkopt)
-        self.addLink(c2, r4, bw=1, **linkopt)
-        ## Router to Router
-        self.addLink(r1, r3, bw=0.5, **linkopt)
-        self.addLink(r2, r3, bw=1, **linkopt)
-        self.addLink(r2, r4, bw=0.5, **linkopt)
-
-def runTopo2dan3():
+def runCLO2():
     #get Current Time for Logging
     current = datetime.datetime.now()
     currDateStr = str(current.date())
@@ -140,9 +125,9 @@ def runTopo2dan3():
     r4.cmd("ip route add 192.168.2.0/24 via 192.168.100.5 dev r4-eth1 onlink")
 
     # set Computer 2 as iperf server
-    c2.cmdPrint('echo "Kaenova Mahendra Auditama \n C2 - runTopo2dan3-c2 at {}" > {}/runTopo2dan3-c2-iperf.txt && iperf -s --interval 1 >> {}/runTopo2dan3-c2-iperf.txt &'.format(f"{currDateStr} {currTimeStr}",logs_path,logs_path))
+    c2.cmd('echo "Kaenova Mahendra Auditama \n C2 - runCLO2-c2 at {}" > {}/runCLO2-c2-iperf.txt && iperf -s --interval 1 >> {}/runCLO2-c2-iperf.txt &'.format(f"{currDateStr} {currTimeStr}",logs_path,logs_path))
     # set Computer 1 as iperf client
-    c1.cmdPrint('echo "Kaenova Mahendra Auditama \n C1 - runTopo2dan3-c1 at {}" > {}/runTopo2dan3-c1-iperf.txt && nohup iperf -c 192.168.2.2 --interval 1 --time 30 >> {}/runTopo2dan3-c1-iperf.txt &'.format(f"{currDateStr} {currTimeStr}",logs_path, logs_path))
+    c1.cmd('echo "Kaenova Mahendra Auditama \n C1 - runCLO2-c1 at {}" > {}/runCLO2-c1-iperf.txt && nohup iperf -c 192.168.2.2 --interval 1 --time 30 >> {}/runCLO2-c1-iperf.txt &'.format(f"{currDateStr} {currTimeStr}",logs_path, logs_path))
     info('\n')
 
     #net.pingAll()
@@ -151,8 +136,33 @@ def runTopo2dan3():
         
 if __name__ == '__main__':
     setLogLevel('info')
-    runTopo2dan3()
- 
+    check_input = True
+    
+    system("cls" if os.name == "nt" else "clear")
+    while check_input:
+        print("Tugas Besar Jaringan Komputer")
+        print("Kaenova Mahendra Auditama | 1301190324 | IF-43-02")
+        print("Pilihan: ")
+        print("1. CLO1")
+        print("2. CLO2")
+        print("3. CLO3")
+        print("4. CLO4")
+        pilihan = input("Masukkan nomor CLO yang diinginkan: ")
+        if pilihan == "1" or pilihan == "2" or pilihan == "3" or pilihan == "4":
+            check_input = False
+        
+    print("================== Initializing ==================")
+        
+    if pilihan == "1":
+        pass
+    elif pilihan == "2":
+        runCLO2()
+    elif pilihan == "3":
+        pass
+    elif pilihan == "4":
+        pass
+    else:
+        raise ValueError("Input {} tidak tersedia".format(pilihan))
 
 
 # # set ospf untuk c1
