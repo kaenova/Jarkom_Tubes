@@ -5,9 +5,12 @@ from mininet.node import CPULimitedHost
 from mininet.log import setLogLevel, info
 from mininet.cli import CLI
 from mininet.node import Host, Node
-#for ospfd and for ripd
+
 from os import system
 import os
+
+import time
+
 CURRENT_PATH = os.getcwd()
 
 import datetime
@@ -22,19 +25,20 @@ class LinuxRouter(Node):
         super(LinuxRouter, self).terminate()
 
 #mendeklarasikan kelas MyTopo dengan parameter Topo
+
 class MyTopo(Topo):
-    #mendeklarasikan def/fungsi untuk membangun topologi
+    #mendeklarasikan def/fungsi untuk membangsun topologi
     def __init__(self, **opts):
         Topo.__init__( self, **opts)
         #Add host and switch
-        linkopt = {'delay' : '5ms', 'loss' : 0}
+        linkopt = {'delay' : '0ms', 'loss' : 0}
         r1 =self.addHost("r1", cls=LinuxRouter)
         r2 =self.addHost("r2", cls=LinuxRouter)
         r3 =self.addHost("r3", cls=LinuxRouter)
         r4 =self.addHost("r4", cls=LinuxRouter)
 
-        c1 = self.addHost("c1", cls=Node)
-        c2 = self.addHost("c2", cls=Node)
+        c1 = self.addHost("c1", cls=Host)
+        c2 = self.addHost("c2", cls=Host)
 
         self.addLink(c1, r1, bw=1, **linkopt)
         self.addLink(c1, r2, bw=1, **linkopt)
@@ -46,7 +50,7 @@ class MyTopo(Topo):
         self.addLink(r1, r4, bw=1, **linkopt)
         self.addLink(r2, r3, bw=1, **linkopt)
         self.addLink(r2, r4, bw=0.5, **linkopt)
-        
+                    
 def runCLO1():
     #get Current Time for Logging
     current = datetime.datetime.now()
@@ -61,7 +65,7 @@ def runCLO1():
     topo = MyTopo()
     link = TCLink
     host = CPULimitedHost
-    net = Mininet(topo=topo, link=link, controller = None ,host = Host) 
+    net = Mininet(topo=topo, link=link ,host = Host) 
     net.start()
     c1, c2, r1, r2, r3 ,r4 = net.get('c1','c2', 'r1','r2','r3','r4')
 
@@ -80,22 +84,18 @@ def runCLO1():
     r1.cmd("ifconfig r1-eth0 192.168.0.1/24")
     r1.cmd("ifconfig r1-eth1 192.168.100.1/30")
     r1.cmd("ifconfig r1-eth2 192.168.100.5/30")
-    r1.cmd("sysctl net.ipv4.ip_forward=1")
     
     r2.cmd("ifconfig r2-eth0 192.168.1.1/24")
     r2.cmd("ifconfig r2-eth1 192.168.100.9/30")
     r2.cmd("ifconfig r2-eth2 192.168.100.13/30")
-    r2.cmd("sysctl net.ipv4.ip_forward=1")
     
     r3.cmd("ifconfig r3-eth0 192.168.2.1/24")
     r3.cmd("ifconfig r3-eth1 192.168.100.2/30")
     r3.cmd("ifconfig r3-eth2 192.168.100.10/30")
-    r3.cmd("sysctl net.ipv4.ip_forward=1")
     
     r4.cmd("ifconfig r4-eth0 192.168.3.1/24")
     r4.cmd("ifconfig r4-eth1 192.168.100.6/30")
     r4.cmd("ifconfig r4-eth2 192.168.100.14/30")
-    r4.cmd("sysctl net.ipv4.ip_forward=1")
 
     # Pinging same networks
     print("C1 - R1 (1)")
@@ -139,10 +139,11 @@ def runCLO2():
     topo = MyTopo()
     link = TCLink
     host = CPULimitedHost
-    net = Mininet(topo=topo, link=link, controller = None ,host = Host) 
+    net = Mininet(topo=topo, link=link ,host = Host) 
     net.start()
     c1, c2, r1, r2, r3 ,r4 = net.get('c1','c2', 'r1','r2','r3','r4')
 
+    # Konfigurasi IP Address di C2
     c1.cmd("ifconfig c1-eth0 192.168.0.2/24")
     c1.cmd("route add default gw 192.168.0.1 c1-eth0")
     c1.cmd("ifconfig c1-eth1 192.168.1.2/24")
@@ -162,10 +163,23 @@ def runCLO2():
     # Manual Routing
     # ke 192.168.1.0
     r1.cmd("ip route add 192.168.1.0/24 via 192.168.100.6 dev r1-eth2 onlink")
-    # ke 192.168.2.0
-    r1.cmd("ip route add 192.168.2.0/24 via 192.168.100.6 dev r1-eth2 onlink")
     # ke 192.168.3.0
-    r1.cmd("ip route add 192.168.3.0/24 via 192.168.100.2 dev r1-eth1 onlink")
+    r1.cmd("ip route add 192.168.3.0/24 via 192.168.100.6 dev r1-eth2 onlink")
+    # ke 192.168.2.0
+    r1.cmd("ip route add 192.168.2.0/24 via 192.168.100.2 dev r1-eth1 onlink")
+    
+    r3.cmd("ifconfig r3-eth0 192.168.2.1/24")
+    r3.cmd("ifconfig r3-eth1 192.168.100.2/30")
+    r3.cmd("ifconfig r3-eth2 192.168.100.10/30")
+    r3.cmd("sysctl net.ipv4.ip_forward=1")
+    # Manual routing
+    # ke 192.168.0.0
+    r3.cmd("ip route add 192.168.0.0/24 via 192.168.100.1 dev r3-eth1 onlink")
+    # ke 192.168.1.0
+    r3.cmd("ip route add 192.168.1.0/24 via 192.168.100.9 dev r3-eth2 onlink")
+    # ke 192.168.3.0
+    r3.cmd("ip route add 192.168.3.0/24 via 192.168.100.9 dev r3-eth2 onlink")
+    
     
     r2.cmd("ifconfig r2-eth0 192.168.1.1/24")
     r2.cmd("ifconfig r2-eth1 192.168.100.9/30")
@@ -179,17 +193,6 @@ def runCLO2():
     # ke 192.168.3.0
     r2.cmd("ip route add 192.168.3.0/24 via 192.168.100.14 dev r2-eth2 onlink")
 
-    r3.cmd("ifconfig r3-eth0 192.168.2.1/24")
-    r3.cmd("ifconfig r3-eth1 192.168.100.2/30")
-    r3.cmd("ifconfig r3-eth2 192.168.100.10/30")
-    r3.cmd("sysctl net.ipv4.ip_forward=1")
-    # Manual routing
-    # ke 192.168.0.0
-    r3.cmd("ip route add 192.168.0.0/24 via 192.168.100.1 dev r3-eth1 onlink")
-    # ke 192.168.1.0
-    r3.cmd("ip route add 192.168.1.0/24 via 192.168.100.9 dev r3-eth2 onlink")
-    # ke 192.168.3.0
-    r3.cmd("ip route add 192.168.3.0/24 via 192.168.100.9 dev r3-eth2 onlink")
 
     r4.cmd("ifconfig r4-eth0 192.168.3.1/24")
     r4.cmd("ifconfig r4-eth1 192.168.100.6/30")
@@ -203,12 +206,105 @@ def runCLO2():
     # ke 192.168.2.0
     r4.cmd("ip route add 192.168.2.0/24 via 192.168.100.5 dev r4-eth1 onlink")
 
+    
     # set Computer 2 as iperf server
     c2.cmd('echo "Kaenova Mahendra Auditama \n C2 - runCLO2-c2 at {}" > {}/runCLO2-c2-iperf.txt && iperf -s --interval 1 >> {}/runCLO2-c2-iperf.txt &'.format(f"{currDateStr} {currTimeStr}",logs_path,logs_path))
     # set Computer 1 as iperf client
-    c1.cmd('echo "Kaenova Mahendra Auditama \n C1 - runCLO2-c1 at {}" > {}/runCLO2-c1-iperf.txt && nohup iperf -c 192.168.2.2 --interval 1 --time 30 >> {}/runCLO2-c1-iperf.txt &'.format(f"{currDateStr} {currTimeStr}",logs_path, logs_path))
+    c1.cmd('echo "Kaenova Mahendra Auditama \n C1 - runCLO2-c1 at {}" > {}/runCLO2-c1-iperf.txt && nohup iperf -c 192.168.2.2 --interval 1 --time 20 >> {}/runCLO2-c1-iperf.txt &'.format(f"{currDateStr} {currTimeStr}",logs_path, logs_path))
     info('\n')
 
+    CLI(net)
+    net.stop()
+    
+def runCLO3():
+    #get Current Time for Logging
+    current = datetime.datetime.now()
+    currDateStr = str(current.date())
+    currTimeStr = "{:%H:%M:%S}".format(current)
+    os.mkdir("{}/logs/{}_{}".format(CURRENT_PATH, currDateStr, currTimeStr))
+    logs_path = "{}/logs/{}_{}/".format(CURRENT_PATH,currDateStr, currTimeStr)
+    
+    info("***Clearing switch and nodes \n")
+    os.system('mn -c')
+    print("\n")
+    topo = MyTopo()
+    link = TCLink
+    host = CPULimitedHost
+    net = Mininet(topo=topo, link=link ,host = Host) 
+    net.start()
+    c1, c2, r1, r2, r3 ,r4 = net.get('c1','c2', 'r1','r2','r3','r4')
+
+    # Konfigurasi IP Address di C2
+    c1.cmd("ifconfig c1-eth0 192.168.0.2/24")
+    c1.cmd("route add default gw 192.168.0.1 c1-eth0")
+    c1.cmd("ifconfig c1-eth1 192.168.1.2/24")
+    c1.cmd("route add default gw 192.168.1.1 c1-eth1")
+    
+    # Konfigurasi IP Address di C2
+    c2.cmd("ifconfig c2-eth0 192.168.2.2/24")
+    c2.cmd("route add default gw 192.168.2.1 c2-eth0")
+    c2.cmd("ifconfig c2-eth1 192.168.3.2/24")
+    c2.cmd("route add default gw 192.168.3.1 c2-eth1")
+
+    # Konfigurasi IP Address di R1
+    r1.cmd("ifconfig r1-eth0 192.168.0.1/24")
+    r1.cmd("ifconfig r1-eth1 192.168.100.1/30")
+    r1.cmd("ifconfig r1-eth2 192.168.100.5/30")
+    r1.cmd("sysctl net.ipv4.ip_forward=1")
+    # Manual Routing
+    # ke 192.168.1.0
+    r1.cmd("ip route add 192.168.1.0/24 via 192.168.100.6 dev r1-eth2 onlink")
+    # ke 192.168.3.0
+    r1.cmd("ip route add 192.168.3.0/24 via 192.168.100.6 dev r1-eth2 onlink")
+    # ke 192.168.2.0
+    r1.cmd("ip route add 192.168.2.0/24 via 192.168.100.2 dev r1-eth1 onlink")
+    
+    r3.cmd("ifconfig r3-eth0 192.168.2.1/24")
+    r3.cmd("ifconfig r3-eth1 192.168.100.2/30")
+    r3.cmd("ifconfig r3-eth2 192.168.100.10/30")
+    r3.cmd("sysctl net.ipv4.ip_forward=1")
+    # Manual routing
+    # ke 192.168.0.0
+    r3.cmd("ip route add 192.168.0.0/24 via 192.168.100.1 dev r3-eth1 onlink")
+    # ke 192.168.1.0
+    r3.cmd("ip route add 192.168.1.0/24 via 192.168.100.9 dev r3-eth2 onlink")
+    # ke 192.168.3.0
+    r3.cmd("ip route add 192.168.3.0/24 via 192.168.100.9 dev r3-eth2 onlink")
+    
+    
+    r2.cmd("ifconfig r2-eth0 192.168.1.1/24")
+    r2.cmd("ifconfig r2-eth1 192.168.100.9/30")
+    r2.cmd("ifconfig r2-eth2 192.168.100.13/30")
+    r2.cmd("sysctl net.ipv4.ip_forward=1")
+    # Manual routing
+    # ke 192.168.0.0
+    r2.cmd("ip route add 192.168.0.0/24 via 192.168.100.10 dev r2-eth1 onlink")
+    # ke 192.168.2.0
+    r2.cmd("ip route add 192.168.2.0/24 via 192.168.100.10 dev r2-eth1 onlink")
+    # ke 192.168.3.0
+    r2.cmd("ip route add 192.168.3.0/24 via 192.168.100.14 dev r2-eth2 onlink")
+
+
+    r4.cmd("ifconfig r4-eth0 192.168.3.1/24")
+    r4.cmd("ifconfig r4-eth1 192.168.100.6/30")
+    r4.cmd("ifconfig r4-eth2 192.168.100.14/30")
+    r4.cmd("sysctl net.ipv4.ip_forward=1")
+    ## Manual routing
+    # ke 192.168.0.0
+    r4.cmd("ip route add 192.168.0.0/24 via 192.168.100.5 dev r4-eth1 onlink")
+    # ke 192.168.1.0
+    r4.cmd("ip route add 192.168.1.0/24 via 192.168.100.13 dev r4-eth2 onlink")
+    # ke 192.168.2.0
+    r4.cmd("ip route add 192.168.2.0/24 via 192.168.100.5 dev r4-eth1 onlink")
+
+    # Server iperf C2
+    c2.cmd("iperf -s &")
+    # Setting up tcpdump
+    c1.cmdPrint("nohup tcpdump -c 30 -i c1-eth0 -i c1-eth1 -w {}/tcpdump.pcap tcp &".format(logs_path))
+    time.sleep(1)
+    # iperfing
+    c1.cmd("nohup iperf -t 1 -c 192.168.2.2 &")
+    
     CLI(net)
     net.stop()
         
@@ -237,7 +333,7 @@ if __name__ == '__main__':
     elif pilihan == "2":
         runCLO2()
     elif pilihan == "3":
-        pass
+        runCLO3()
     elif pilihan == "4":
         pass
     else:
