@@ -296,13 +296,106 @@ def runCLO3():
     # Server iperf C2
     c2.cmd("iperf -s &")
     # Setting up tcpdump
-    c2.cmd("nohup tcpdump -c 30 -i c2-eth0 -i c2-eth1 -w {}/tcpdump.pcap tcp &".format(logs_path))
+    c2.cmd("nohup tcpdump -c 10 -i c2-eth0 -w {}/tcpdump.pcap tcp&".format(logs_path))
     time.sleep(1)
-    c1.cmdPrint("iperf -t 2 -c 192.168.2.2")
     # iperfing
+    c1.cmd("iperf -t 5 -c 192.168.2.2 &")
     
     CLI(net)
     net.stop()
+        
+def runCLO4():
+    #get Current Time for Logging
+    current = datetime.datetime.now()
+    currDateStr = str(current.date())
+    currTimeStr = "{:%H:%M:%S}".format(current)
+    os.mkdir("{}/logs/{}_{}".format(CURRENT_PATH, currDateStr, currTimeStr))
+    logs_path = "{}/logs/{}_{}/".format(CURRENT_PATH,currDateStr, currTimeStr)
+    
+    info("***Clearing switch and nodes \n")
+    os.system('mn -c')
+    print("\n")
+    topo = MyTopo()
+    link = TCLink
+    host = CPULimitedHost
+    net = Mininet(topo=topo, link=link ,host = Host) 
+    net.start()
+    c1, c2, r1, r2, r3 ,r4 = net.get('c1','c2', 'r1','r2','r3','r4')
+
+    # Konfigurasi IP Address di C2
+    c1.cmd("ifconfig c1-eth0 192.168.0.2/24")
+    c1.cmd("route add default gw 192.168.0.1 c1-eth0")
+    c1.cmd("ifconfig c1-eth1 192.168.1.2/24")
+    c1.cmd("route add default gw 192.168.1.1 c1-eth1")
+    
+    # Konfigurasi IP Address di C2
+    c2.cmd("ifconfig c2-eth0 192.168.2.2/24")
+    c2.cmd("route add default gw 192.168.2.1 c2-eth0")
+    c2.cmd("ifconfig c2-eth1 192.168.3.2/24")
+    c2.cmd("route add default gw 192.168.3.1 c2-eth1")
+
+    # Konfigurasi IP Address di R1
+    r1.cmd("ifconfig r1-eth0 192.168.0.1/24")
+    r1.cmd("ifconfig r1-eth1 192.168.100.1/30")
+    r1.cmd("ifconfig r1-eth2 192.168.100.5/30")
+    r1.cmd("sysctl net.ipv4.ip_forward=1")
+    # Manual Routing
+    # ke 192.168.1.0
+    r1.cmd("ip route add 192.168.1.0/24 via 192.168.100.6 dev r1-eth2 onlink")
+    # ke 192.168.3.0
+    r1.cmd("ip route add 192.168.3.0/24 via 192.168.100.6 dev r1-eth2 onlink")
+    # ke 192.168.2.0
+    r1.cmd("ip route add 192.168.2.0/24 via 192.168.100.2 dev r1-eth1 onlink")
+    
+    r3.cmd("ifconfig r3-eth0 192.168.2.1/24")
+    r3.cmd("ifconfig r3-eth1 192.168.100.2/30")
+    r3.cmd("ifconfig r3-eth2 192.168.100.10/30")
+    r3.cmd("sysctl net.ipv4.ip_forward=1")
+    # Manual routing
+    # ke 192.168.0.0
+    r3.cmd("ip route add 192.168.0.0/24 via 192.168.100.1 dev r3-eth1 onlink")
+    # ke 192.168.1.0
+    r3.cmd("ip route add 192.168.1.0/24 via 192.168.100.9 dev r3-eth2 onlink")
+    # ke 192.168.3.0
+    r3.cmd("ip route add 192.168.3.0/24 via 192.168.100.9 dev r3-eth2 onlink")
+    
+    
+    r2.cmd("ifconfig r2-eth0 192.168.1.1/24")
+    r2.cmd("ifconfig r2-eth1 192.168.100.9/30")
+    r2.cmd("ifconfig r2-eth2 192.168.100.13/30")
+    r2.cmd("sysctl net.ipv4.ip_forward=1")
+    # Manual routing
+    # ke 192.168.0.0
+    r2.cmd("ip route add 192.168.0.0/24 via 192.168.100.10 dev r2-eth1 onlink")
+    # ke 192.168.2.0
+    r2.cmd("ip route add 192.168.2.0/24 via 192.168.100.10 dev r2-eth1 onlink")
+    # ke 192.168.3.0
+    r2.cmd("ip route add 192.168.3.0/24 via 192.168.100.14 dev r2-eth2 onlink")
+
+
+    r4.cmd("ifconfig r4-eth0 192.168.3.1/24")
+    r4.cmd("ifconfig r4-eth1 192.168.100.6/30")
+    r4.cmd("ifconfig r4-eth2 192.168.100.14/30")
+    r4.cmd("sysctl net.ipv4.ip_forward=1")
+    ## Manual routing
+    # ke 192.168.0.0
+    r4.cmd("ip route add 192.168.0.0/24 via 192.168.100.5 dev r4-eth1 onlink")
+    # ke 192.168.1.0
+    r4.cmd("ip route add 192.168.1.0/24 via 192.168.100.13 dev r4-eth2 onlink")
+    # ke 192.168.2.0
+    r4.cmd("ip route add 192.168.2.0/24 via 192.168.100.5 dev r4-eth1 onlink")
+
+    # Server iperf C2
+    c2.cmd("iperf -s &")
+    # Setting up tcpdump
+    c1.cmdPrint("nohup tcpdump -c 30 -i c1-eth0 -i c1-eth1 -w {}/tcpdump.pcap tcp &".format(logs_path))
+    time.sleep(1)
+    # iperfing
+    c1.cmd("nohup iperf -t 1 -c 192.168.2.2 &")
+    
+    CLI(net)
+    net.stop()
+        
         
 if __name__ == '__main__':
     setLogLevel('info')
@@ -331,6 +424,6 @@ if __name__ == '__main__':
     elif pilihan == "3":
         runCLO3()
     elif pilihan == "4":
-        pass
+        runCLO4()
     else:
         raise ValueError("Input {} tidak tersedia".format(pilihan))
