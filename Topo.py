@@ -159,11 +159,11 @@ def runCLO1():
 
 def runCLO2():
     #get Current Time for Logging
-    current = datetime.datetime.now()
-    currDateStr = str(current.date())
-    currTimeStr = "{:%H:%M:%S}".format(current)
-    os.mkdir("{}/logs/{}_{}".format(CURRENT_PATH, currDateStr, currTimeStr))
-    logs_path = "{}/logs/{}_{}/".format(CURRENT_PATH,currDateStr, currTimeStr)
+    # current = datetime.datetime.now()
+    # currDateStr = str(current.date())
+    # currTimeStr = "{:%H:%M:%S}".format(current)
+    # os.mkdir("{}/logs/{}_{}".format(CURRENT_PATH, currDateStr, currTimeStr))
+    # logs_path = "{}/logs/{}_{}/".format(CURRENT_PATH,currDateStr, currTimeStr)
     
     info("***Clearing switch and nodes \n")
     os.system('mn -c')
@@ -208,6 +208,8 @@ def runCLO2():
     r1.cmd("route add -net 192.168.2.0/24 gw 192.168.100.2")
     r1.cmd("route add -net 192.168.3.0/24 gw 192.168.100.6")
     r1.cmd("route add -net 192.168.1.0/24 gw 192.168.100.6")
+    r1.cmd("route add -net 192.168.100.8/30 gw 192.168.100.2")
+    r1.cmd("route add -net 192.168.100.12/30 gw 192.168.100.6")
 
     # Konfigurasi R3
     r3.cmd("ifconfig r3-eth0 192.168.2.1/24")
@@ -217,6 +219,8 @@ def runCLO2():
     r3.cmd("route add -net 192.168.0.0/24 gw 192.168.100.1")
     r3.cmd("route add -net 192.168.1.0/24 gw 192.168.100.9")
     r3.cmd("route add -net 192.168.3.0/24 gw 192.168.100.9")
+    r3.cmd("route add -net 192.168.100.4/30 gw 192.168.100.1")
+    r3.cmd("route add -net 192.168.100.12/30 gw 192.168.100.9")
     
     # Konfigurasi R2
     r2.cmd("ifconfig r2-eth0 192.168.1.1/24")
@@ -224,8 +228,10 @@ def runCLO2():
     r2.cmd("ifconfig r2-eth2 192.168.100.13/30")
     r2.cmd("sysctl net.ipv4.ip_forward=1")
     r2.cmd("route add -net 192.168.0.0/24 gw 192.168.100.10")
-    r2.cmd("route add -net 192.168.2.0/24 gw 192.168.100.14")
+    r2.cmd("route add -net 192.168.2.0/24 gw 192.168.100.10")
     r2.cmd("route add -net 192.168.3.0/24 gw 192.168.100.14")
+    r2.cmd("route add -net 192.168.100.4/30 gw 192.168.100.14")
+    r2.cmd("route add -net 192.168.100.0/39 gw 192.168.100.10")
 
     # Konfigurasi R4
     r4.cmd("ifconfig r4-eth0 192.168.3.1/24")
@@ -235,13 +241,15 @@ def runCLO2():
     r4.cmd("route add -net 192.168.0.0/24 gw 192.168.100.5")
     r4.cmd("route add -net 192.168.1.0/24 gw 192.168.100.13")
     r4.cmd("route add -net 192.168.2.0/24 gw 192.168.100.5")
+    r4.cmd("route add -net 192.168.100.8/30 gw 192.168.100.13")
+    r4.cmd("route add -net 192.168.100.0/30 gw 192.168.100.5")
 
     
-    # set Computer 2 as iperf server
-    c2.cmd('echo "Kaenova Mahendra Auditama \n C2 - runCLO2-c2 at {}" > {}/runCLO2-c2-iperf.txt && iperf -s --interval 1 >> {}/runCLO2-c2-iperf.txt &'.format(f"{currDateStr} {currTimeStr}",logs_path,logs_path))
-    # set Computer 1 as iperf client
-    c1.cmd('echo "Kaenova Mahendra Auditama \n C1 - runCLO2-c1 at {}" > {}/runCLO2-c1-iperf.txt && nohup iperf -c 192.168.2.2 --interval 1 --time 20 >> {}/runCLO2-c1-iperf.txt &'.format(f"{currDateStr} {currTimeStr}",logs_path, logs_path))
-    info('\n')
+    # # set Computer 2 as iperf server
+    # c2.cmd('echo "Kaenova Mahendra Auditama \n C2 - runCLO2-c2 at {}" > {}/runCLO2-c2-iperf.txt && iperf -s --interval 1 >> {}/runCLO2-c2-iperf.txt &'.format(f"{currDateStr} {currTimeStr}",logs_path,logs_path))
+    # # set Computer 1 as iperf client
+    # c1.cmd('echo "Kaenova Mahendra Auditama \n C1 - runCLO2-c1 at {}" > {}/runCLO2-c1-iperf.txt && nohup iperf -c 192.168.2.2 --interval 1 --time 20 >> {}/runCLO2-c1-iperf.txt &'.format(f"{currDateStr} {currTimeStr}",logs_path, logs_path))
+    # info('\n')
 
     CLI(net)
     net.stop()
@@ -297,6 +305,8 @@ def runCLO3():
     r1.cmd("route add -net 192.168.2.0/24 gw 192.168.100.2")
     r1.cmd("route add -net 192.168.3.0/24 gw 192.168.100.6")
     r1.cmd("route add -net 192.168.1.0/24 gw 192.168.100.6")
+    r1.cmd("route add -net 192.168.100.8/30 gw 192.168.100.2")
+    r1.cmd("route add -net 192.168.100.12/30 gw 192.168.100.6")
 
     # Konfigurasi R3
     r3.cmd("ifconfig r3-eth0 192.168.2.1/24")
@@ -306,6 +316,8 @@ def runCLO3():
     r3.cmd("route add -net 192.168.0.0/24 gw 192.168.100.1")
     r3.cmd("route add -net 192.168.1.0/24 gw 192.168.100.9")
     r3.cmd("route add -net 192.168.3.0/24 gw 192.168.100.9")
+    r3.cmd("route add -net 192.168.100.4/30 gw 192.168.100.1")
+    r3.cmd("route add -net 192.168.100.12/30 gw 192.168.100.9")
     
     # Konfigurasi R2
     r2.cmd("ifconfig r2-eth0 192.168.1.1/24")
@@ -313,8 +325,10 @@ def runCLO3():
     r2.cmd("ifconfig r2-eth2 192.168.100.13/30")
     r2.cmd("sysctl net.ipv4.ip_forward=1")
     r2.cmd("route add -net 192.168.0.0/24 gw 192.168.100.10")
-    r2.cmd("route add -net 192.168.2.0/24 gw 192.168.100.14")
+    r2.cmd("route add -net 192.168.2.0/24 gw 192.168.100.10")
     r2.cmd("route add -net 192.168.3.0/24 gw 192.168.100.14")
+    r2.cmd("route add -net 192.168.100.4/30 gw 192.168.100.14")
+    r2.cmd("route add -net 192.168.100.0/39 gw 192.168.100.10")
 
     # Konfigurasi R4
     r4.cmd("ifconfig r4-eth0 192.168.3.1/24")
@@ -324,6 +338,8 @@ def runCLO3():
     r4.cmd("route add -net 192.168.0.0/24 gw 192.168.100.5")
     r4.cmd("route add -net 192.168.1.0/24 gw 192.168.100.13")
     r4.cmd("route add -net 192.168.2.0/24 gw 192.168.100.5")
+    r4.cmd("route add -net 192.168.100.8/30 gw 192.168.100.13")
+    r4.cmd("route add -net 192.168.100.0/30 gw 192.168.100.5")
 
     # Server iperf C2
     c2.cmd("iperf -s &")
@@ -389,6 +405,8 @@ def runCLO4():
     r1.cmd("route add -net 192.168.2.0/24 gw 192.168.100.2")
     r1.cmd("route add -net 192.168.3.0/24 gw 192.168.100.6")
     r1.cmd("route add -net 192.168.1.0/24 gw 192.168.100.6")
+    r1.cmd("route add -net 192.168.100.8/30 gw 192.168.100.2")
+    r1.cmd("route add -net 192.168.100.12/30 gw 192.168.100.6")
 
     # Konfigurasi R3
     r3.cmd("ifconfig r3-eth0 192.168.2.1/24")
@@ -398,6 +416,8 @@ def runCLO4():
     r3.cmd("route add -net 192.168.0.0/24 gw 192.168.100.1")
     r3.cmd("route add -net 192.168.1.0/24 gw 192.168.100.9")
     r3.cmd("route add -net 192.168.3.0/24 gw 192.168.100.9")
+    r3.cmd("route add -net 192.168.100.4/30 gw 192.168.100.1")
+    r3.cmd("route add -net 192.168.100.12/30 gw 192.168.100.9")
     
     # Konfigurasi R2
     r2.cmd("ifconfig r2-eth0 192.168.1.1/24")
@@ -405,8 +425,10 @@ def runCLO4():
     r2.cmd("ifconfig r2-eth2 192.168.100.13/30")
     r2.cmd("sysctl net.ipv4.ip_forward=1")
     r2.cmd("route add -net 192.168.0.0/24 gw 192.168.100.10")
-    r2.cmd("route add -net 192.168.2.0/24 gw 192.168.100.14")
+    r2.cmd("route add -net 192.168.2.0/24 gw 192.168.100.10")
     r2.cmd("route add -net 192.168.3.0/24 gw 192.168.100.14")
+    r2.cmd("route add -net 192.168.100.4/30 gw 192.168.100.14")
+    r2.cmd("route add -net 192.168.100.0/39 gw 192.168.100.10")
 
     # Konfigurasi R4
     r4.cmd("ifconfig r4-eth0 192.168.3.1/24")
@@ -416,6 +438,8 @@ def runCLO4():
     r4.cmd("route add -net 192.168.0.0/24 gw 192.168.100.5")
     r4.cmd("route add -net 192.168.1.0/24 gw 192.168.100.13")
     r4.cmd("route add -net 192.168.2.0/24 gw 192.168.100.5")
+    r4.cmd("route add -net 192.168.100.8/30 gw 192.168.100.13")
+    r4.cmd("route add -net 192.168.100.0/30 gw 192.168.100.5")
     
     # Setting up traffic
     c2.cmd("iperf -s &")
