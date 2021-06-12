@@ -40,16 +40,16 @@ class MyTopo(Topo):
         c1 = self.addHost("c1", cls=Host)
         c2 = self.addHost("c2", cls=Host)
 
-        self.addLink(c1, r1, bw=1, **linkopt)
-        self.addLink(c1, r2, bw=1, **linkopt)
+        self.addLink(c1, r1, bw=1, cls=TCLink, **linkopt)
+        self.addLink(c1, r2, bw=1, cls=TCLink, **linkopt)
         ## C2 to Router
-        self.addLink(c2, r3, bw=1, **linkopt)
-        self.addLink(c2, r4, bw=1, **linkopt)
+        self.addLink(c2, r3, bw=1, cls=TCLink, **linkopt)
+        self.addLink(c2, r4, bw=1, cls=TCLink, **linkopt)
         ## Router to Router
-        self.addLink(r1, r3, bw=0.5, **linkopt)
-        self.addLink(r1, r4, bw=1, **linkopt)
-        self.addLink(r2, r3, bw=1, **linkopt)
-        self.addLink(r2, r4, bw=0.5, **linkopt)
+        self.addLink(r1, r3, bw=0.5, cls=TCLink, **linkopt)
+        self.addLink(r1, r4, bw=1, cls=TCLink, **linkopt)
+        self.addLink(r2, r3, bw=1, cls=TCLink, **linkopt)
+        self.addLink(r2, r4, bw=0.5, cls=TCLink, **linkopt)
                     
 def runCLO1():
     #get Current Time for Logging
@@ -143,68 +143,66 @@ def runCLO2():
     net.start()
     c1, c2, r1, r2, r3 ,r4 = net.get('c1','c2', 'r1','r2','r3','r4')
 
-    # Konfigurasi IP Address di C2
+    # Konfigurasi C1
     c1.cmd("ifconfig c1-eth0 192.168.0.2/24")
-    c1.cmd("route add default gw 192.168.0.1 c1-eth0")
     c1.cmd("ifconfig c1-eth1 192.168.1.2/24")
-    c1.cmd("route add default gw 192.168.1.1 c1-eth1")
+    c1.cmd("ip rule add from 192.168.0.2 table 1")
+    c1.cmd("ip rule add from 192.168.1.2 table 2")
+    c1.cmd("ip route add default via 192.168.0.1 dev c1-eth0 table 1")
+    c1.cmd("ip route add default via 192.168.1.1 dev c1-eth1 table 2")
+    c1.cmd("ip route add 192.168.0.0/24 dev c1-eth0 scope link table 1")
+    c1.cmd("ip route add 192.168.1.0/24 dev c1-eth1 scope link table 2")
+    c1.cmd("ip route add default scope global nexthop via 192.168.0.1 dev c1-eth0")
     
-    # Konfigurasi IP Address di C2
+    # Konfigurasi C2
     c2.cmd("ifconfig c2-eth0 192.168.2.2/24")
-    c2.cmd("route add default gw 192.168.2.1 c2-eth0")
+    # c2.cmd("route add default gw 192.168.2.1 c2-eth0")
     c2.cmd("ifconfig c2-eth1 192.168.3.2/24")
-    c2.cmd("route add default gw 192.168.3.1 c2-eth1")
+    # c2.cmd("route add default gw 192.168.3.1 c2-eth1")
+    c2.cmd("ip rule add from 192.168.2.2 table 1")
+    c2.cmd("ip rule add from 192.168.3.2 table 2")
+    c2.cmd("ip route add default via 192.168.2.1 dev c2-eth0 table 1")
+    c2.cmd("ip route add default via 192.168.3.1 dev c2-eth1 table 2")
+    c2.cmd("ip route add 192.168.2.0/24 dev c2-eth0 scope link table 1")
+    c2.cmd("ip route add 192.168.3.0/24 dev c2-eth1 scope link table 2")
+    c2.cmd("ip route add default scope global nexthop via 192.168.3.1 dev c2-eth1")
+    
 
-    # Konfigurasi IP Address di R1
+    # Konfigurasi R1
     r1.cmd("ifconfig r1-eth0 192.168.0.1/24")
     r1.cmd("ifconfig r1-eth1 192.168.100.1/30")
     r1.cmd("ifconfig r1-eth2 192.168.100.5/30")
     r1.cmd("sysctl net.ipv4.ip_forward=1")
-    # Manual Routing
-    # ke 192.168.1.0
-    r1.cmd("ip route add 192.168.1.0/24 via 192.168.100.6 dev r1-eth2 onlink")
-    # ke 192.168.3.0
-    r1.cmd("ip route add 192.168.3.0/24 via 192.168.100.6 dev r1-eth2 onlink")
-    # ke 192.168.2.0
-    r1.cmd("ip route add 192.168.2.0/24 via 192.168.100.2 dev r1-eth1 onlink")
-    
+    r1.cmd("route add -net 192.168.2.0/24 gw 192.168.100.2")
+    r1.cmd("route add -net 192.168.3.0/24 gw 192.168.100.6")
+    r1.cmd("route add -net 192.168.1.0/24 gw 192.168.100.6")
+
+    # Konfigurasi R3
     r3.cmd("ifconfig r3-eth0 192.168.2.1/24")
     r3.cmd("ifconfig r3-eth1 192.168.100.2/30")
     r3.cmd("ifconfig r3-eth2 192.168.100.10/30")
     r3.cmd("sysctl net.ipv4.ip_forward=1")
-    # Manual routing
-    # ke 192.168.0.0
-    r3.cmd("ip route add 192.168.0.0/24 via 192.168.100.1 dev r3-eth1 onlink")
-    # ke 192.168.1.0
-    r3.cmd("ip route add 192.168.1.0/24 via 192.168.100.9 dev r3-eth2 onlink")
-    # ke 192.168.3.0
-    r3.cmd("ip route add 192.168.3.0/24 via 192.168.100.9 dev r3-eth2 onlink")
+    r3.cmd("route add -net 192.168.0.0/24 gw 192.168.100.1")
+    r3.cmd("route add -net 192.168.1.0/24 gw 192.168.100.9")
+    r3.cmd("route add -net 192.168.3.0/24 gw 192.168.100.9")
     
-    
+    # Konfigurasi R2
     r2.cmd("ifconfig r2-eth0 192.168.1.1/24")
     r2.cmd("ifconfig r2-eth1 192.168.100.9/30")
     r2.cmd("ifconfig r2-eth2 192.168.100.13/30")
     r2.cmd("sysctl net.ipv4.ip_forward=1")
-    # Manual routing
-    # ke 192.168.0.0
-    r2.cmd("ip route add 192.168.0.0/24 via 192.168.100.10 dev r2-eth1 onlink")
-    # ke 192.168.2.0
-    r2.cmd("ip route add 192.168.2.0/24 via 192.168.100.10 dev r2-eth1 onlink")
-    # ke 192.168.3.0
-    r2.cmd("ip route add 192.168.3.0/24 via 192.168.100.14 dev r2-eth2 onlink")
+    r2.cmd("route add -net 192.168.0.0/24 gw 192.168.100.10")
+    r2.cmd("route add -net 192.168.2.0/24 gw 192.168.100.14")
+    r2.cmd("route add -net 192.168.3.0/24 gw 192.168.100.14")
 
-
+    # Konfigurasi R4
     r4.cmd("ifconfig r4-eth0 192.168.3.1/24")
     r4.cmd("ifconfig r4-eth1 192.168.100.6/30")
     r4.cmd("ifconfig r4-eth2 192.168.100.14/30")
     r4.cmd("sysctl net.ipv4.ip_forward=1")
-    ## Manual routing
-    # ke 192.168.0.0
-    r4.cmd("ip route add 192.168.0.0/24 via 192.168.100.5 dev r4-eth1 onlink")
-    # ke 192.168.1.0
-    r4.cmd("ip route add 192.168.1.0/24 via 192.168.100.13 dev r4-eth2 onlink")
-    # ke 192.168.2.0
-    r4.cmd("ip route add 192.168.2.0/24 via 192.168.100.5 dev r4-eth1 onlink")
+    r4.cmd("route add -net 192.168.0.0/24 gw 192.168.100.5")
+    r4.cmd("route add -net 192.168.1.0/24 gw 192.168.100.13")
+    r4.cmd("route add -net 192.168.2.0/24 gw 192.168.100.5")
 
     
     # set Computer 2 as iperf server
@@ -234,76 +232,74 @@ def runCLO3():
     net.start()
     c1, c2, r1, r2, r3 ,r4 = net.get('c1','c2', 'r1','r2','r3','r4')
 
-    # Konfigurasi IP Address di C2
+    # Konfigurasi C1
     c1.cmd("ifconfig c1-eth0 192.168.0.2/24")
-    c1.cmd("route add default gw 192.168.0.1 c1-eth0")
     c1.cmd("ifconfig c1-eth1 192.168.1.2/24")
-    c1.cmd("route add default gw 192.168.1.1 c1-eth1")
+    c1.cmd("ip rule add from 192.168.0.2 table 1")
+    c1.cmd("ip rule add from 192.168.1.2 table 2")
+    c1.cmd("ip route add default via 192.168.0.1 dev c1-eth0 table 1")
+    c1.cmd("ip route add default via 192.168.1.1 dev c1-eth1 table 2")
+    c1.cmd("ip route add 192.168.0.0/24 dev c1-eth0 scope link table 1")
+    c1.cmd("ip route add 192.168.1.0/24 dev c1-eth1 scope link table 2")
+    c1.cmd("ip route add default scope global nexthop via 192.168.0.1 dev c1-eth0")
     
-    # Konfigurasi IP Address di C2
+    # Konfigurasi C2
     c2.cmd("ifconfig c2-eth0 192.168.2.2/24")
-    c2.cmd("route add default gw 192.168.2.1 c2-eth0")
+    # c2.cmd("route add default gw 192.168.2.1 c2-eth0")
     c2.cmd("ifconfig c2-eth1 192.168.3.2/24")
-    c2.cmd("route add default gw 192.168.3.1 c2-eth1")
+    # c2.cmd("route add default gw 192.168.3.1 c2-eth1")
+    c2.cmd("ip rule add from 192.168.2.2 table 1")
+    c2.cmd("ip rule add from 192.168.3.2 table 2")
+    c2.cmd("ip route add default via 192.168.2.1 dev c2-eth0 table 1")
+    c2.cmd("ip route add default via 192.168.3.1 dev c2-eth1 table 2")
+    c2.cmd("ip route add 192.168.2.0/24 dev c2-eth0 scope link table 1")
+    c2.cmd("ip route add 192.168.3.0/24 dev c2-eth1 scope link table 2")
+    c2.cmd("ip route add default scope global nexthop via 192.168.3.1 dev c2-eth1")
+    
 
-    # Konfigurasi IP Address di R1
+    # Konfigurasi R1
     r1.cmd("ifconfig r1-eth0 192.168.0.1/24")
     r1.cmd("ifconfig r1-eth1 192.168.100.1/30")
     r1.cmd("ifconfig r1-eth2 192.168.100.5/30")
     r1.cmd("sysctl net.ipv4.ip_forward=1")
-    # Manual Routing
-    # ke 192.168.1.0
-    r1.cmd("ip route add 192.168.1.0/24 via 192.168.100.6 dev r1-eth2 onlink")
-    # ke 192.168.3.0
-    r1.cmd("ip route add 192.168.3.0/24 via 192.168.100.6 dev r1-eth2 onlink")
-    # ke 192.168.2.0
-    r1.cmd("ip route add 192.168.2.0/24 via 192.168.100.2 dev r1-eth1 onlink")
-    
+    r1.cmd("route add -net 192.168.2.0/24 gw 192.168.100.2")
+    r1.cmd("route add -net 192.168.3.0/24 gw 192.168.100.6")
+    r1.cmd("route add -net 192.168.1.0/24 gw 192.168.100.6")
+
+    # Konfigurasi R3
     r3.cmd("ifconfig r3-eth0 192.168.2.1/24")
     r3.cmd("ifconfig r3-eth1 192.168.100.2/30")
     r3.cmd("ifconfig r3-eth2 192.168.100.10/30")
     r3.cmd("sysctl net.ipv4.ip_forward=1")
-    # Manual routing
-    # ke 192.168.0.0
-    r3.cmd("ip route add 192.168.0.0/24 via 192.168.100.1 dev r3-eth1 onlink")
-    # ke 192.168.1.0
-    r3.cmd("ip route add 192.168.1.0/24 via 192.168.100.9 dev r3-eth2 onlink")
-    # ke 192.168.3.0
-    r3.cmd("ip route add 192.168.3.0/24 via 192.168.100.9 dev r3-eth2 onlink")
+    r3.cmd("route add -net 192.168.0.0/24 gw 192.168.100.1")
+    r3.cmd("route add -net 192.168.1.0/24 gw 192.168.100.9")
+    r3.cmd("route add -net 192.168.3.0/24 gw 192.168.100.9")
     
-    
+    # Konfigurasi R2
     r2.cmd("ifconfig r2-eth0 192.168.1.1/24")
     r2.cmd("ifconfig r2-eth1 192.168.100.9/30")
     r2.cmd("ifconfig r2-eth2 192.168.100.13/30")
     r2.cmd("sysctl net.ipv4.ip_forward=1")
-    # Manual routing
-    # ke 192.168.0.0
-    r2.cmd("ip route add 192.168.0.0/24 via 192.168.100.10 dev r2-eth1 onlink")
-    # ke 192.168.2.0
-    r2.cmd("ip route add 192.168.2.0/24 via 192.168.100.10 dev r2-eth1 onlink")
-    # ke 192.168.3.0
-    r2.cmd("ip route add 192.168.3.0/24 via 192.168.100.14 dev r2-eth2 onlink")
+    r2.cmd("route add -net 192.168.0.0/24 gw 192.168.100.10")
+    r2.cmd("route add -net 192.168.2.0/24 gw 192.168.100.14")
+    r2.cmd("route add -net 192.168.3.0/24 gw 192.168.100.14")
 
-
+    # Konfigurasi R4
     r4.cmd("ifconfig r4-eth0 192.168.3.1/24")
     r4.cmd("ifconfig r4-eth1 192.168.100.6/30")
     r4.cmd("ifconfig r4-eth2 192.168.100.14/30")
     r4.cmd("sysctl net.ipv4.ip_forward=1")
-    ## Manual routing
-    # ke 192.168.0.0
-    r4.cmd("ip route add 192.168.0.0/24 via 192.168.100.5 dev r4-eth1 onlink")
-    # ke 192.168.1.0
-    r4.cmd("ip route add 192.168.1.0/24 via 192.168.100.13 dev r4-eth2 onlink")
-    # ke 192.168.2.0
-    r4.cmd("ip route add 192.168.2.0/24 via 192.168.100.5 dev r4-eth1 onlink")
+    r4.cmd("route add -net 192.168.0.0/24 gw 192.168.100.5")
+    r4.cmd("route add -net 192.168.1.0/24 gw 192.168.100.13")
+    r4.cmd("route add -net 192.168.2.0/24 gw 192.168.100.5")
 
     # Server iperf C2
     c2.cmd("iperf -s &")
     # Setting up tcpdump
-    c1.cmdPrint("nohup tcpdump -c 30 -i c1-eth0 -i c1-eth1 -w {}/tcpdump.pcap tcp &".format(logs_path))
+    c2.cmd("nohup tcpdump -c 30 -i c2-eth0 -i c2-eth1 -w {}/tcpdump.pcap tcp &".format(logs_path))
     time.sleep(1)
+    c1.cmdPrint("iperf -t 2 -c 192.168.2.2")
     # iperfing
-    c1.cmd("nohup iperf -t 1 -c 192.168.2.2 &")
     
     CLI(net)
     net.stop()
