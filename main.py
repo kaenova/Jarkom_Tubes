@@ -25,8 +25,8 @@ class LinuxRouter(Node):
         self.cmd('sysctl net.ipv4.ip_forward=0')
         super(LinuxRouter, self).terminate()
 
-#mendeklarasikan kelas MyTopo dengan parameter Topo
-
+# ref code 1
+# Membuat Topologi untuk CLO1, CLO2, CLO3
 class MyTopo(Topo):
     #mendeklarasikan def/fungsi untuk membangsun topologi
     def __init__(self, **opts):
@@ -51,12 +51,15 @@ class MyTopo(Topo):
         self.addLink(r1, r4, bw=1, cls=TCLink, **linkopt)
         self.addLink(r2, r3, bw=1, cls=TCLink, **linkopt)
         self.addLink(r2, r4, bw=0.5, cls=TCLink, **linkopt)
-        
+  
+# ref code 5
+# Membuat Topologi  
 class MyTopoWithBuffer(Topo):
     #mendeklarasikan def/fungsi untuk membangsun topologi
     def __init__(self, max_queue, **opts):
         Topo.__init__( self, **opts)
         #Add host and switch
+        print("MAX QUEUE: ", max_queue)
         linkopt = {'delay' : '0ms', 'loss' : 0}
         r1 =self.addHost("r1", cls=LinuxRouter)
         r2 =self.addHost("r2", cls=LinuxRouter)
@@ -66,17 +69,27 @@ class MyTopoWithBuffer(Topo):
         c1 = self.addHost("c1", cls=Host)
         c2 = self.addHost("c2", cls=Host)
 
-        self.addLink(c1, r1, max_queue_size=max_queue, bw=1, cls=TCLink, **linkopt)
-        self.addLink(c1, r2, max_queue_size=max_queue, bw=1, cls=TCLink, **linkopt)
-        ## C2 to Router
-        self.addLink(c2, r3, max_queue_size=max_queue, bw=1, cls=TCLink, **linkopt)
-        self.addLink(c2, r4, max_queue_size=max_queue, bw=1, cls=TCLink, **linkopt)
-        ## Router to Router
-        self.addLink(r1, r3, max_queue_size=max_queue, bw=0.5, cls=TCLink, **linkopt)
-        self.addLink(r1, r4, max_queue_size=max_queue, bw=1, cls=TCLink, **linkopt)
-        self.addLink(r2, r3, max_queue_size=max_queue, bw=1, cls=TCLink, **linkopt)
-        self.addLink(r2, r4, max_queue_size=max_queue, bw=0.5, cls=TCLink, **linkopt)
-                    
+        self.addLink(c1, r1, max_queue_size=max_queue, use_htb=True, bw=1, cls=TCLink, **linkopt)
+        self.addLink(c1, r2, max_queue_size=max_queue, use_htb=True, bw=1, cls=TCLink, **linkopt)
+        self.addLink(c2, r3, max_queue_size=max_queue, use_htb=True, bw=1, cls=TCLink, **linkopt)
+        self.addLink(c2, r4, max_queue_size=max_queue, use_htb=True, bw=1, cls=TCLink, **linkopt)
+        self.addLink(r1, r3, max_queue_size=max_queue, use_htb=True, bw=0.5, cls=TCLink, **linkopt)
+        self.addLink(r1, r4, max_queue_size=max_queue, use_htb=True, bw=1, cls=TCLink, **linkopt)
+        self.addLink(r2, r3, max_queue_size=max_queue, use_htb=True, bw=1, cls=TCLink, **linkopt)
+        self.addLink(r2, r4, max_queue_size=max_queue, use_htb=True, bw=0.5, cls=TCLink, **linkopt)
+        
+        # self.addLink(c1, r1, max_queue_size=max_queue, use_htb=True, bw=1, cls=TCLink, **linkopt)
+        # self.addLink(c1, r2, max_queue_size=max_queue, use_htb=True, bw=1, cls=TCLink, **linkopt)
+        # ## C2 to Router
+        # self.addLink(c2, r3, max_queue_size=max_queue, use_htb=True, bw=1, cls=TCLink, **linkopt)
+        # self.addLink(c2, r4, max_queue_size=max_queue, use_htb=True, bw=1, cls=TCLink, **linkopt)
+        # ## Router to Router
+        # self.addLink(r1, r3, max_queue_size=max_queue, use_htb=True, bw=0.5, cls=TCLink, **linkopt)
+        # self.addLink(r1, r4, max_queue_size=max_queue, use_htb=True, bw=1, cls=TCLink, **linkopt)
+        # self.addLink(r2, r3, max_queue_size=max_queue, use_htb=True, bw=1, cls=TCLink, **linkopt)
+        # self.addLink(r2, r4, max_queue_size=max_queue, use_htb=True, bw=0.5, cls=TCLink, **linkopt)
+
+# CLO 1 (Konfigurasi Jaringan)                    
 def runCLO1():
     #get Current Time for Logging
     current = datetime.datetime.now()
@@ -95,6 +108,8 @@ def runCLO1():
     net.start()
     c1, c2, r1, r2, r3 ,r4 = net.get('c1','c2', 'r1','r2','r3','r4')
 
+    # ref code 2
+    # Konfigurasi IP Address di C1
     c1.cmd("ifconfig c1-eth0 192.168.0.2/24")
     c1.cmd("route add default gw 192.168.0.1 c1-eth0")
     c1.cmd("ifconfig c1-eth1 192.168.1.2/24")
@@ -111,14 +126,17 @@ def runCLO1():
     r1.cmd("ifconfig r1-eth1 192.168.100.1/30")
     r1.cmd("ifconfig r1-eth2 192.168.100.5/30")
     
+    # Konfigurasi IP Address di R2
     r2.cmd("ifconfig r2-eth0 192.168.1.1/24")
     r2.cmd("ifconfig r2-eth1 192.168.100.9/30")
     r2.cmd("ifconfig r2-eth2 192.168.100.13/30")
     
+    # Konfigurasi IP Address di R3
     r3.cmd("ifconfig r3-eth0 192.168.2.1/24")
     r3.cmd("ifconfig r3-eth1 192.168.100.2/30")
     r3.cmd("ifconfig r3-eth2 192.168.100.10/30")
     
+    # Konfigurasi IP Address di R4
     r4.cmd("ifconfig r4-eth0 192.168.3.1/24")
     r4.cmd("ifconfig r4-eth1 192.168.100.6/30")
     r4.cmd("ifconfig r4-eth2 192.168.100.14/30")
@@ -130,22 +148,22 @@ def runCLO1():
     
     c1.cmd('echo "Kaenova Mahendra Auditama \n runCLO1 \n Check Network Connectivity" >> {}'.format(logs_file))
     c1.cmd('echo "\n\n======= Reachable =======" >> {}'.format(logs_file))
-    print("C1 - R1 (1)")
-    c1.cmd('echo "\n\nC1 - R1 (1)" >> {} && ping -c 3 192.168.0.1 >> {}'.format(logs_file, logs_file))
-    print("C1 - R2 (2)")
-    c1.cmd('"echo "\n\nC1 - R2 (2)" >> {} && ping -c 3 192.168.1.1 >> {}'.format(logs_file, logs_file)) 
-    print("C2 - R3 (3)")
-    c2.cmd('echo "\n\nC2 - R3 (3)" >> {} && ping -c 3 192.168.2.1 >> {}'.format(logs_file, logs_file))
-    print("C2 - R4 (4)")
-    c2.cmd('echo "\n\nC2 - R4 (4)" >> {} && ping -c 3 192.168.3.1 >> {}'.format(logs_file, logs_file)) 
-    print("R1 - R3 (5)")
-    r1.cmd('echo "\n\nR1 - R3 (5)" >> {} && ping -c 3 192.168.100.2 >> {}'.format(logs_file, logs_file)) 
-    print("R1 - R4 (6)")
-    r1.cmd('echo "\n\nR1 - R4 (6)" >> {} && ping -c 3 192.168.100.6 >> {}'.format(logs_file, logs_file)) 
-    print("R2 - R3 (7)")
-    r2.cmd('echo "\n\nR2 - R3 (7)" >> {} && ping -c 3 192.168.100.10 >> {}'.format(logs_file, logs_file)) 
-    print("R2 - R4 (8)")
-    r2.cmd('echo "\n\nR2 - R4 (8)" >> {} && ping -c 3 192.168.100.14 >> {}'.format(logs_file, logs_file)) 
+    print("R1 - R3 (Area 1)")
+    r1.cmd('echo "\n\nR1 - R3 (Area 1)" >> {} && ping -c 3 192.168.100.2 >> {}'.format(logs_file, logs_file)) 
+    print("R1 - R4 (Area 2)")
+    r1.cmd('echo "\n\nR1 - R4 (Area 2)" >> {} && ping -c 3 192.168.100.6 >> {}'.format(logs_file, logs_file)) 
+    print("R2 - R3 (Area 3)")
+    r2.cmd('echo "\n\nR2 - R3 (Area 3)" >> {} && ping -c 3 192.168.100.10 >> {}'.format(logs_file, logs_file)) 
+    print("R2 - R4 (Area 4)")
+    r2.cmd('echo "\n\nR2 - R4 (Area 4)" >> {} && ping -c 3 192.168.100.14 >> {}'.format(logs_file, logs_file))
+    print("C1 - R1 (Area 5)")
+    c1.cmd('echo "\n\nC1 - R1 (Area 5)" >> {} && ping -c 3 192.168.0.1 >> {}'.format(logs_file, logs_file))
+    print("C1 - R2 (Area 6)")
+    c1.cmd('"echo "\n\nC1 - R2 (Area 6)" >> {} && ping -c 3 192.168.1.1 >> {}'.format(logs_file, logs_file)) 
+    print("C2 - R3 (Area 7)")
+    c2.cmd('echo "\n\nC2 - R3 (Area 7)" >> {} && ping -c 3 192.168.2.1 >> {}'.format(logs_file, logs_file))
+    print("C2 - R4 (Area 8)")
+    c2.cmd('echo "\n\nC2 - R4 (Area 8)" >> {} && ping -c 3 192.168.3.1 >> {}'.format(logs_file, logs_file)) 
     
     # Unreacable
     c1.cmd('echo "\n\n======= Unreachable =======" >> {}'.format(logs_file))
@@ -154,16 +172,13 @@ def runCLO1():
     print("C1 - R4")
     c1.cmd('echo "\n\nC1 - R4" >> {} && ping -c 3 192.168.3.1 >> {}'.format(logs_file, logs_file)) 
     
+    print("log file has been created at {}".format(logs_file))
+    
     CLI(net)
     net.stop()
 
+# CLO 2 (Static Routing)
 def runCLO2():
-    #get Current Time for Logging
-    # current = datetime.datetime.now()
-    # currDateStr = str(current.date())
-    # currTimeStr = "{:%H:%M:%S}".format(current)
-    # os.mkdir("{}/logs/{}_{}".format(CURRENT_PATH, currDateStr, currTimeStr))
-    # logs_path = "{}/logs/{}_{}/".format(CURRENT_PATH,currDateStr, currTimeStr)
     
     info("***Clearing switch and nodes \n")
     os.system('mn -c')
@@ -175,6 +190,7 @@ def runCLO2():
     net.start()
     c1, c2, r1, r2, r3 ,r4 = net.get('c1','c2', 'r1','r2','r3','r4')
 
+    # ref code 3
     # Konfigurasi C1
     c1.cmd("ifconfig c1-eth0 192.168.0.2/24")
     c1.cmd("ifconfig c1-eth1 192.168.1.2/24")
@@ -185,12 +201,13 @@ def runCLO2():
     c1.cmd("ip route add 192.168.0.0/24 dev c1-eth0 scope link table 1")
     c1.cmd("ip route add 192.168.1.0/24 dev c1-eth1 scope link table 2")
     c1.cmd("ip route add default scope global nexthop via 192.168.0.1 dev c1-eth0")
+    c1.cmd("ip route add default scope global nexthop via 192.168.1.1 dev c1-eth1")
+    c1.cmd("route add default gw 192.168.1.1 dev c1-eth1")
+    c1.cmd("route add default gw 192.168.0.1 dev c1-eth0")
     
     # Konfigurasi C2
     c2.cmd("ifconfig c2-eth0 192.168.2.2/24")
-    # c2.cmd("route add default gw 192.168.2.1 c2-eth0")
     c2.cmd("ifconfig c2-eth1 192.168.3.2/24")
-    # c2.cmd("route add default gw 192.168.3.1 c2-eth1")
     c2.cmd("ip rule add from 192.168.2.2 table 1")
     c2.cmd("ip rule add from 192.168.3.2 table 2")
     c2.cmd("ip route add default via 192.168.2.1 dev c2-eth0 table 1")
@@ -198,6 +215,9 @@ def runCLO2():
     c2.cmd("ip route add 192.168.2.0/24 dev c2-eth0 scope link table 1")
     c2.cmd("ip route add 192.168.3.0/24 dev c2-eth1 scope link table 2")
     c2.cmd("ip route add default scope global nexthop via 192.168.3.1 dev c2-eth1")
+    c2.cmd("ip route add default scope global nexthop via 192.168.2.1 dev c2-eth0")
+    c2.cmd("route add default gw 192.168.3.1 dev c2-eth1")
+    c2.cmd("route add default gw 192.168.2.1 dev c2-eth0")
     
 
     # Konfigurasi R1
@@ -205,6 +225,7 @@ def runCLO2():
     r1.cmd("ifconfig r1-eth1 192.168.100.1/30")
     r1.cmd("ifconfig r1-eth2 192.168.100.5/30")
     r1.cmd("sysctl net.ipv4.ip_forward=1")
+    # Routing R1
     r1.cmd("route add -net 192.168.2.0/24 gw 192.168.100.2")
     r1.cmd("route add -net 192.168.3.0/24 gw 192.168.100.6")
     r1.cmd("route add -net 192.168.1.0/24 gw 192.168.100.6")
@@ -216,6 +237,7 @@ def runCLO2():
     r3.cmd("ifconfig r3-eth1 192.168.100.2/30")
     r3.cmd("ifconfig r3-eth2 192.168.100.10/30")
     r3.cmd("sysctl net.ipv4.ip_forward=1")
+    # Routing R3
     r3.cmd("route add -net 192.168.0.0/24 gw 192.168.100.1")
     r3.cmd("route add -net 192.168.1.0/24 gw 192.168.100.9")
     r3.cmd("route add -net 192.168.3.0/24 gw 192.168.100.9")
@@ -227,6 +249,7 @@ def runCLO2():
     r2.cmd("ifconfig r2-eth1 192.168.100.9/30")
     r2.cmd("ifconfig r2-eth2 192.168.100.13/30")
     r2.cmd("sysctl net.ipv4.ip_forward=1")
+    # Routing R2
     r2.cmd("route add -net 192.168.0.0/24 gw 192.168.100.10")
     r2.cmd("route add -net 192.168.2.0/24 gw 192.168.100.10")
     r2.cmd("route add -net 192.168.3.0/24 gw 192.168.100.14")
@@ -238,22 +261,18 @@ def runCLO2():
     r4.cmd("ifconfig r4-eth1 192.168.100.6/30")
     r4.cmd("ifconfig r4-eth2 192.168.100.14/30")
     r4.cmd("sysctl net.ipv4.ip_forward=1")
+    # Routing R4
     r4.cmd("route add -net 192.168.0.0/24 gw 192.168.100.5")
     r4.cmd("route add -net 192.168.1.0/24 gw 192.168.100.13")
     r4.cmd("route add -net 192.168.2.0/24 gw 192.168.100.5")
     r4.cmd("route add -net 192.168.100.8/30 gw 192.168.100.13")
     r4.cmd("route add -net 192.168.100.0/30 gw 192.168.100.5")
 
-    
-    # # set Computer 2 as iperf server
-    # c2.cmd('echo "Kaenova Mahendra Auditama \n C2 - runCLO2-c2 at {}" > {}/runCLO2-c2-iperf.txt && iperf -s --interval 1 >> {}/runCLO2-c2-iperf.txt &'.format(f"{currDateStr} {currTimeStr}",logs_path,logs_path))
-    # # set Computer 1 as iperf client
-    # c1.cmd('echo "Kaenova Mahendra Auditama \n C1 - runCLO2-c1 at {}" > {}/runCLO2-c1-iperf.txt && nohup iperf -c 192.168.2.2 --interval 1 --time 20 >> {}/runCLO2-c1-iperf.txt &'.format(f"{currDateStr} {currTimeStr}",logs_path, logs_path))
-    # info('\n')
-
+    print("Routing has been initialize, no log file created")
     CLI(net)
     net.stop()
     
+# CLO 3 (TCP)
 def runCLO3():
     #get Current Time for Logging
     current = datetime.datetime.now()
@@ -282,6 +301,9 @@ def runCLO3():
     c1.cmd("ip route add 192.168.0.0/24 dev c1-eth0 scope link table 1")
     c1.cmd("ip route add 192.168.1.0/24 dev c1-eth1 scope link table 2")
     c1.cmd("ip route add default scope global nexthop via 192.168.0.1 dev c1-eth0")
+    c1.cmd("ip route add default scope global nexthop via 192.168.1.1 dev c1-eth1")
+    c1.cmd("route add default gw 192.168.1.1 dev c1-eth1")
+    c1.cmd("route add default gw 192.168.0.1 dev c1-eth0")
     
     # Konfigurasi C2
     c2.cmd("ifconfig c2-eth0 192.168.2.2/24")
@@ -295,6 +317,9 @@ def runCLO3():
     c2.cmd("ip route add 192.168.2.0/24 dev c2-eth0 scope link table 1")
     c2.cmd("ip route add 192.168.3.0/24 dev c2-eth1 scope link table 2")
     c2.cmd("ip route add default scope global nexthop via 192.168.3.1 dev c2-eth1")
+    c2.cmd("ip route add default scope global nexthop via 192.168.2.1 dev c2-eth0")
+    c2.cmd("route add default gw 192.168.3.1 dev c2-eth1")
+    c2.cmd("route add default gw 192.168.2.1 dev c2-eth0")
     
 
     # Konfigurasi R1
@@ -341,6 +366,7 @@ def runCLO3():
     r4.cmd("route add -net 192.168.100.8/30 gw 192.168.100.13")
     r4.cmd("route add -net 192.168.100.0/30 gw 192.168.100.5")
 
+    # ref code 4
     # Server iperf C2
     c2.cmd("iperf -s &")
     # Setting up tcpdump
@@ -348,10 +374,15 @@ def runCLO3():
     time.sleep(1)
     # iperfing
     c1.cmd("iperf -t 5 -c 192.168.2.2 &")
+    print("currently generating traffic, please wait for 5 second")
+    time.sleep(5)
+    c1.cmdPrint("tcpdump -r {}/tcpdump.pcap".format(logs_path))
     
+    print("\nTcp dump file (.pcap) has been created at {}/tcpdump.pcap".format(logs_path))
     CLI(net)
     net.stop()
         
+# CLO 4 (Buffer Size)
 def runCLO4():
     #get Current Time for Logging
     current = datetime.datetime.now()
@@ -382,12 +413,13 @@ def runCLO4():
     c1.cmd("ip route add 192.168.0.0/24 dev c1-eth0 scope link table 1")
     c1.cmd("ip route add 192.168.1.0/24 dev c1-eth1 scope link table 2")
     c1.cmd("ip route add default scope global nexthop via 192.168.0.1 dev c1-eth0")
+    c1.cmd("ip route add default scope global nexthop via 192.168.1.1 dev c1-eth1")
+    c1.cmd("route add default gw 192.168.1.1 dev c1-eth1")
+    c1.cmd("route add default gw 192.168.0.1 dev c1-eth0")
     
     # Konfigurasi C2
     c2.cmd("ifconfig c2-eth0 192.168.2.2/24")
-    # c2.cmd("route add default gw 192.168.2.1 c2-eth0")
     c2.cmd("ifconfig c2-eth1 192.168.3.2/24")
-    # c2.cmd("route add default gw 192.168.3.1 c2-eth1")
     c2.cmd("ip rule add from 192.168.2.2 table 1")
     c2.cmd("ip rule add from 192.168.3.2 table 2")
     c2.cmd("ip route add default via 192.168.2.1 dev c2-eth0 table 1")
@@ -395,6 +427,9 @@ def runCLO4():
     c2.cmd("ip route add 192.168.2.0/24 dev c2-eth0 scope link table 1")
     c2.cmd("ip route add 192.168.3.0/24 dev c2-eth1 scope link table 2")
     c2.cmd("ip route add default scope global nexthop via 192.168.3.1 dev c2-eth1")
+    c2.cmd("ip route add default scope global nexthop via 192.168.2.1 dev c2-eth0")
+    c2.cmd("route add default gw 192.168.3.1 dev c2-eth1")
+    c2.cmd("route add default gw 192.168.2.1 dev c2-eth0")
     
 
     # Konfigurasi R1
@@ -441,13 +476,17 @@ def runCLO4():
     r4.cmd("route add -net 192.168.100.8/30 gw 192.168.100.13")
     r4.cmd("route add -net 192.168.100.0/30 gw 192.168.100.5")
     
+    # ref code 6
     # Setting up traffic
     c2.cmd("iperf -s &")
-    c1.cmd("iperf -t 60 -c 192.168.2.2 &")
+    c1.cmd("iperf -t 30 -B 192.168.0.2 -c 192.168.2.2 &")
+    c1.cmd("iperf -t 30 -B 192.168.1.2 -c 192.168.2.2 &")
     
     # set Computer 1 as iperf client
-    c1.cmd('echo "Kaenova Mahendra Auditama \n C1 - runCLO4-c1 at {} \n with buffer {}" > {}/runCLO4-c1-{}-iperf.txt && ping 192.168.2.2 >> {}/runCLO4-c1-{}-iperf.txt && echo "\n Finish" >> {}/runCLO4-c1-{}-iperf.txt &'.format(f"{currDateStr} {currTimeStr}",buffer_size, logs_path, buffer_size, logs_path, buffer_size, logs_path, buffer_size))
+    c1.cmd('echo "Kaenova Mahendra Auditama \n C1 - runCLO4-c1 at {} \n with buffer {}" > {}/runCLO4-c1-{}-iperf.txt && ping -I c1-eth1 192.168.2.2 >> {}/runCLO4-c1-{}-iperf.txt && echo "\n Finish" >> {}/runCLO4-c1-{}-iperf.txt &'.format(f"{currDateStr} {currTimeStr}",buffer_size, logs_path, buffer_size, logs_path, buffer_size, logs_path, buffer_size))
     info('\n')
+    print("Currently generating ping log file in the background")
+    print("log file is created at {}".format(logs_path))
     
     CLI(net)
     net.stop()

@@ -1,0 +1,105 @@
+Kaenova Mahendra Auditama 
+ runCLO1 
+ Check Network Connectivity
+
+
+======= Reachable =======
+
+
+R1 - R3 (Area 1)
+PING 192.168.100.2 (192.168.100.2) 56(84) bytes of data.
+64 bytes from 192.168.100.2: icmp_seq=1 ttl=64 time=0.119 ms
+64 bytes from 192.168.100.2: icmp_seq=2 ttl=64 time=0.113 ms
+64 bytes from 192.168.100.2: icmp_seq=3 ttl=64 time=0.121 ms
+
+--- 192.168.100.2 ping statistics ---
+3 packets transmitted, 3 received, 0% packet loss, time 2039ms
+rtt min/avg/max/mdev = 0.113/0.117/0.121/0.003 ms
+
+
+R1 - R4 (Area 2)
+PING 192.168.100.6 (192.168.100.6) 56(84) bytes of data.
+64 bytes from 192.168.100.6: icmp_seq=1 ttl=64 time=0.076 ms
+64 bytes from 192.168.100.6: icmp_seq=2 ttl=64 time=0.120 ms
+64 bytes from 192.168.100.6: icmp_seq=3 ttl=64 time=0.040 ms
+
+--- 192.168.100.6 ping statistics ---
+3 packets transmitted, 3 received, 0% packet loss, time 2015ms
+rtt min/avg/max/mdev = 0.040/0.078/0.120/0.032 ms
+
+
+R2 - R3 (Area 3)
+PING 192.168.100.10 (192.168.100.10) 56(84) bytes of data.
+64 bytes from 192.168.100.10: icmp_seq=1 ttl=64 time=0.054 ms
+64 bytes from 192.168.100.10: icmp_seq=2 ttl=64 time=0.112 ms
+64 bytes from 192.168.100.10: icmp_seq=3 ttl=64 time=0.107 ms
+
+--- 192.168.100.10 ping statistics ---
+3 packets transmitted, 3 received, 0% packet loss, time 2022ms
+rtt min/avg/max/mdev = 0.054/0.091/0.112/0.026 ms
+
+
+R2 - R4 (Area 4)
+PING 192.168.100.14 (192.168.100.14) 56(84) bytes of data.
+64 bytes from 192.168.100.14: icmp_seq=1 ttl=64 time=0.077 ms
+64 bytes from 192.168.100.14: icmp_seq=2 ttl=64 time=0.132 ms
+64 bytes from 192.168.100.14: icmp_seq=3 ttl=64 time=0.108 ms
+
+--- 192.168.100.14 ping statistics ---
+3 packets transmitted, 3 received, 0% packet loss, time 2016ms
+rtt min/avg/max/mdev = 0.077/0.105/0.132/0.022 ms
+
+
+C1 - R1 (Area 5)
+PING 192.168.0.1 (192.168.0.1) 56(84) bytes of data.
+64 bytes from 192.168.0.1: icmp_seq=1 ttl=64 time=0.079 ms
+64 bytes from 192.168.0.1: icmp_seq=2 ttl=64 time=0.094 ms
+64 bytes from 192.168.0.1: icmp_seq=3 ttl=64 time=0.118 ms
+
+--- 192.168.0.1 ping statistics ---
+3 packets transmitted, 3 received, 0% packet loss, time 2016ms
+rtt min/avg/max/mdev = 0.079/0.097/0.118/0.016 ms
+
+
+C2 - R3 (Area 7)
+PING 192.168.2.1 (192.168.2.1) 56(84) bytes of data.
+64 bytes from 192.168.2.1: icmp_seq=1 ttl=64 time=0.071 ms
+64 bytes from 192.168.2.1: icmp_seq=2 ttl=64 time=0.113 ms
+64 bytes from 192.168.2.1: icmp_seq=3 ttl=64 time=0.113 ms
+
+--- 192.168.2.1 ping statistics ---
+3 packets transmitted, 3 received, 0% packet loss, time 2018ms
+rtt min/avg/max/mdev = 0.071/0.099/0.113/0.019 ms
+
+
+C2 - R4 (Area 8)
+PING 192.168.3.1 (192.168.3.1) 56(84) bytes of data.
+64 bytes from 192.168.3.1: icmp_seq=1 ttl=64 time=0.207 ms
+64 bytes from 192.168.3.1: icmp_seq=2 ttl=64 time=0.114 ms
+64 bytes from 192.168.3.1: icmp_seq=3 ttl=64 time=0.077 ms
+
+--- 192.168.3.1 ping statistics ---
+3 packets transmitted, 3 received, 0% packet loss, time 2036ms
+rtt min/avg/max/mdev = 0.077/0.132/0.207/0.054 ms
+
+
+======= Unreachable =======
+
+
+C1 - C2
+PING 192.168.2.2 (192.168.2.2) 56(84) bytes of data.
+From 192.168.1.1 icmp_seq=1 Destination Net Unreachable
+From 192.168.1.1 icmp_seq=2 Destination Net Unreachable
+From 192.168.1.1 icmp_seq=3 Destination Net Unreachable
+
+--- 192.168.2.2 ping statistics ---
+3 packets transmitted, 0 received, +3 errors, 100% packet loss, time 2039ms
+
+
+
+C1 - R4
+PING 192.168.3.1 (192.168.3.1) 56(84) bytes of data.
+
+--- 192.168.3.1 ping statistics ---
+3 packets transmitted, 0 received, 100% packet loss, time 2023ms
+
