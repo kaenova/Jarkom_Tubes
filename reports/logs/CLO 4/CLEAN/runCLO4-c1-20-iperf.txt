@@ -1,0 +1,37 @@
+Kaenova Mahendra Auditama 
+ C1 - runCLO4-c1 at 2021-06-13 18:33:36 
+ with buffer 20
+PING 192.168.2.2 (192.168.2.2) from 192.168.1.2 c1-eth1: 56(84) bytes of data.
+64 bytes from 192.168.2.2: icmp_seq=1 ttl=62 time=227 ms
+64 bytes from 192.168.2.2: icmp_seq=4 ttl=62 time=313 ms
+64 bytes from 192.168.2.2: icmp_seq=5 ttl=62 time=319 ms
+64 bytes from 192.168.2.2: icmp_seq=6 ttl=62 time=314 ms
+64 bytes from 192.168.2.2: icmp_seq=7 ttl=62 time=356 ms
+64 bytes from 192.168.2.2: icmp_seq=8 ttl=62 time=375 ms
+64 bytes from 192.168.2.2: icmp_seq=9 ttl=62 time=417 ms
+64 bytes from 192.168.2.2: icmp_seq=11 ttl=62 time=233 ms
+64 bytes from 192.168.2.2: icmp_seq=12 ttl=62 time=288 ms
+64 bytes from 192.168.2.2: icmp_seq=13 ttl=62 time=318 ms
+64 bytes from 192.168.2.2: icmp_seq=14 ttl=62 time=349 ms
+64 bytes from 192.168.2.2: icmp_seq=15 ttl=62 time=403 ms
+64 bytes from 192.168.2.2: icmp_seq=16 ttl=62 time=432 ms
+64 bytes from 192.168.2.2: icmp_seq=18 ttl=62 time=335 ms
+64 bytes from 192.168.2.2: icmp_seq=19 ttl=62 time=377 ms
+64 bytes from 192.168.2.2: icmp_seq=20 ttl=62 time=345 ms
+64 bytes from 192.168.2.2: icmp_seq=21 ttl=62 time=411 ms
+64 bytes from 192.168.2.2: icmp_seq=22 ttl=62 time=452 ms
+64 bytes from 192.168.2.2: icmp_seq=23 ttl=62 time=396 ms
+64 bytes from 192.168.2.2: icmp_seq=24 ttl=62 time=303 ms
+64 bytes from 192.168.2.2: icmp_seq=25 ttl=62 time=381 ms
+64 bytes from 192.168.2.2: icmp_seq=26 ttl=62 time=386 ms
+64 bytes from 192.168.2.2: icmp_seq=27 ttl=62 time=379 ms
+64 bytes from 192.168.2.2: icmp_seq=28 ttl=62 time=420 ms
+64 bytes from 192.168.2.2: icmp_seq=31 ttl=62 time=273 ms
+64 bytes from 192.168.2.2: icmp_seq=32 ttl=62 time=339 ms
+64 bytes from 192.168.2.2: icmp_seq=33 ttl=62 time=343 ms
+64 bytes from 192.168.2.2: icmp_seq=34 ttl=62 time=385 ms
+64 bytes from 192.168.2.2: icmp_seq=35 ttl=62 time=426 ms
+64 bytes from 192.168.2.2: icmp_seq=36 ttl=62 time=454 ms
+64 bytes from 192.168.2.2: icmp_seq=37 ttl=62 time=143 ms
+64 bytes from 192.168.2.2: icmp_seq=38 ttl=62 time=0.151 ms
+64 bytes from 192.168.2.2: icmp_seq=39 ttl=62 time=0.146 ms

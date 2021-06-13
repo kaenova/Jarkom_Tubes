@@ -1,4 +1,0 @@
-Before melanjutkan laporan
-1. Finalisaasi kodingan (berikan tanda)
-2. Pastikan logs yang ada di dalam laporan masuk ke dalam /reports/logs
-3. Jika ingin memasukkan kode ke dalam laporan, jangan lupa untuk memberi tanda pada source code aslinya dan melakukan copy paste ke dalam folder code snippets
